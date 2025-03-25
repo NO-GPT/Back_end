@@ -30,15 +30,7 @@ public class AuthController {
     }
 
     @GetMapping("/profile")
-    public ResponseEntity<ApiResponse<Optional<User>>> verifyToken(
-            @RequestHeader(value = "Authorization", required = false) String token
-    ) {
-        ApiResponse<Optional<User>> response = authService.verifyToken(token);
-
-        if (response.isSuccess()) {
-            return ResponseEntity.ok(response);
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
-        }
+    public ResponseEntity<ApiResponse<User>> getProfile(){
+        return ResponseEntity.ok(authService.getProfile());
     }
 }

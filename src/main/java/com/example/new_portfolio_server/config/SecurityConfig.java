@@ -1,6 +1,8 @@
 package com.example.new_portfolio_server.config;
 
+import com.example.new_portfolio_server.portfolioCRUD.PortfolioRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -33,6 +35,8 @@ public class SecurityConfig {
                         .requestMatchers("/users").permitAll()              // 인증없이 접속 가능
                         .requestMatchers("/users/signup").permitAll()       // 회원가입도
                         .requestMatchers("/auth/login").permitAll()         // 로그인도 마찬가지
+                        .requestMatchers("/portfolio").permitAll()
+                        .requestMatchers("/portfolio/{id}").permitAll()
                         .anyRequest().authenticated()                         // 나머지 경로는 모두 인증 필요
                 )
 //                .userDetailsService(userDetailsService)                     // 시큐리티 6부턴 자동으로 감지 한다던데??

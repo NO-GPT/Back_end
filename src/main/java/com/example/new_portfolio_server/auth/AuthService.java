@@ -59,18 +59,10 @@ public class AuthService {
         return ApiResponse.success("로그인 성공", token);
     }
 
-    public ApiResponse<Optional<User>> verifyToken(String bearerToken) {
-        // 토큰이 없거나 Bearer 형식이 아닌 경우 예외 던지기
-        if (bearerToken == null || !bearerToken.startsWith(JwtTokenProvider.BEARER + " ")) {
-            throw new IllegalArgumentException("유효하지 않은 Authorization 헤더입니다");
-        }
-
-        String token = bearerToken.substring(7);
-
-        // 토큰 유효성 검사 및 사용자 이름 추출 (예외는 JwtTokenProvider에서 발생)
-        String username = jwtTokenProvider.getUsername(token);
-        Optional<User> user = userRepository.findByUsername(username);
-
+    public ApiResponse<User> getProfile() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalStateException("사용자를 찾을 수 없습니다."));
         return ApiResponse.success(user);
     }
 }

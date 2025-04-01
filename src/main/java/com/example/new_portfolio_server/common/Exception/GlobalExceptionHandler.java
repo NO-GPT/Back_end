@@ -36,7 +36,7 @@ public class GlobalExceptionHandler {
         String errorMessage = ex.getBindingResult().getFieldErrors()
                 .stream()
                 .map(FieldError::getDefaultMessage)
-                .collect(Collectors.joining(", ")); // 유효성 검사 실패 메시지를 수집해 하나의 문자열로 결합.
+                .collect(Collectors.joining(", ")); // 유효성 검사 실패 메시지를  하나의 문자열로 결합.
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.error(errorMessage));

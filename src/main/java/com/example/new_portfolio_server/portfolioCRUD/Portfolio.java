@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
@@ -12,6 +14,7 @@ import java.time.LocalDateTime;
 @Setter
 @Table(name = "portfolio")
 @NoArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
 public class Portfolio {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,33 +22,33 @@ public class Portfolio {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
     @CreatedDate
-    @Column(name = "date_time")
+    @Column(name = "date_time", nullable = false)
     private LocalDateTime dateTime; // 게시 날짜
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
-    @CreatedDate
+    @LastModifiedDate
     @Column(name = "update_time")
     private LocalDateTime updateTime; // 수정날짜
 
-    @Column(name = "project_introduce", length = 60)
+    @Column(name = "project_introduce", length = 60, nullable = false)
     private String projectIntroduce; // 프로젝트 소개
 
-    @Column(name = "project_part", length = 500)
+    @Column(name = "project_part", length = 500, nullable = false)
     private String projectPart; // 프로젝트 맡은 역할/기능
 
-    @Column(name = "project_content", length = 400)
+    @Column(name = "project_content", length = 400, nullable = false)
     private String projectContent; // 배운 점 / 문제 해결
 
-    @Column(name = "project_files_path", length = 200)
+    @Column(name = "project_files_path", length = 200, nullable = false)
     private String projectFilesPath; // 프로젝트 파일 경로(시각적 자료)
 
     @Column(name = "project_links", length = 200)
     private String projectLinks; // 프로젝트 참고 링크(github, notion 등)
 
-    @Column(name = "programing_skills", length = 300)
+    @Column(name = "programing_skills", length = 300, nullable = false)
     private String programingSkills; // 사용한 스킬(사용한 툴, 언어 등)
 
-    @Column(name = "userid")
+    @Column(name = "userid") // 유저 아이디와 연결한 후에 nullable = false 넣을 예정
     private String userId; // 유저 아이디(게시글 식별)
 }
 

@@ -92,13 +92,6 @@ public class AuthService {
                 return ApiResponse.error("리프레시 토큰이 일치하지 않습니다.");
             }
 
-            // 토큰ㄴ값에서 사용자 정보 조회
-            User user = userRepository.findByUsername(username)
-                    .orElse(null);
-            if (user == null) {
-                return ApiResponse.error("사용자를 찾을 수 없습니다.");
-            }
-
             // 새로운 access 토큰 생성
             Long userId = myUserDetailsService.findUserIdByUsername(username);
             String newAccessToken = jwtTokenProvider.generateAccessToken(username, userId);

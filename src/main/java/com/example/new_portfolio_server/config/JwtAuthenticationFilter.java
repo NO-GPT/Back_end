@@ -1,5 +1,6 @@
 package com.example.new_portfolio_server.config;
 
+import com.example.new_portfolio_server.config.redis.RedisServiceImpl;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -18,6 +19,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtTokenProvider;
+    private final RedisServiceImpl redisServiceImpl;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -26,14 +28,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = jwtTokenProvider.resolveToken(request);
 
         // 토큰 검증
-        if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
-            try {
-                if (jwtTokenProvider.validateToken(token)) {
+        if (StringUtils.hasText(token)) {
+            // 블랙리스트 확인
+            String blacklisted = redisServiceImpl.getValues("blacklist:" + token);
+            if (blacklisted != null) {
+                throw new JwtException("로그아웃된 토큰입니다.");
+            }
+
+            if (jwtTokenProvider.validateToken(token)) {
+                try {
                     Authentication authentication = jwtTokenProvider.getAuthentication(token);
                     SecurityContextHolder.getContext().setAuthentication(authentication);
+                } catch (JwtException e) {
+                    throw new AuthenticationException(e.getMessage()) {};
                 }
-            } catch (JwtException e) {
-                throw new AuthenticationException(e.getMessage()) {}; // JwtException을 AuthenticationException으로 래핑
             }
         }
         filterChain.doFilter(request, response);

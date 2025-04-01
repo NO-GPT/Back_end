@@ -82,6 +82,23 @@ public class JwtTokenProvider {
                 .build();
     }
 
+    // 엑세스 토큰만 발급 (토큰 재 발급시)
+    public String generateAccessToken(String username, Long userId) {
+        Claims claims = Jwts.claims().setSubject(username);
+        claims.put("userId", userId);
+        claims.put("name", username);
+
+        Date currentDate = new Date();
+        Date accessTokenExpireDate = new Date(currentDate.getTime() + ACCESS_TOKEN_VALID_TIME);
+
+        return Jwts.builder()
+                .setClaims(claims)
+                .setIssuedAt(currentDate)
+                .setExpiration(accessTokenExpireDate)
+                .signWith(SignatureAlgorithm.HS256, secretKey)
+                .compact();
+    }
+
     // 리프레시 토큰 만료 시간을 가져오는 메서드
     public Long getRefreshTokenExpirationMillis() {
         return REFRESH_TOKEN_VALID_TIME;

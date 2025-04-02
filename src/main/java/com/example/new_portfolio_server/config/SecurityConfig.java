@@ -33,10 +33,11 @@ public class SecurityConfig {
                         .requestMatchers("/users").permitAll()              // 인증없이 접속 가능
                         .requestMatchers("/users/signup").permitAll()       // 회원가입도
                         .requestMatchers("/auth/login").permitAll()         // 로그인도 마찬가지
+                        .requestMatchers("/bookmark", "/bookmark/{id}").permitAll()
                         .anyRequest().authenticated()                         // 나머지 경로는 모두 인증 필요
-                )
+                );
 //                .userDetailsService(userDetailsService)                     // 시큐리티 6부턴 자동으로 감지 한다던데??
-                .httpBasic(Customizer.withDefaults());                        // http 기본 인증??
+//                .httpBasic(Customizer.withDefaults());                        // http 기본 인증??
         return http.build();
     }
 }

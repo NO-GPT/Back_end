@@ -1,6 +1,7 @@
 package com.example.new_portfolio_server.bookmark.Dto;
 
 import com.example.new_portfolio_server.bookmark.BookMark;
+import com.example.new_portfolio_server.user.User;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -24,9 +25,9 @@ public class CreateBookMarkDto {
     // private Long boardId;
 
     // BookMark 엔티티로 변환하는 메서드
-    public BookMark toEntity() {
+    public BookMark toEntity(User user) {
         return BookMark.builder()
-                .userId(this.userId)
+                .user(user)
                 .sort(this.sort)
                 .enabled(this.enabled)
                 // .board(board) // Board 엔티티가 완성되면 추가

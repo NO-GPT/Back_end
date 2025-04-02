@@ -1,5 +1,8 @@
 package com.example.new_portfolio_server.bookmark;
 
+import com.example.new_portfolio_server.user.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -27,11 +30,13 @@ public class BookMark {
 //    private Board board;
 
     @Comment("유저 id")
-    @Column()
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    @JsonIgnore  // User 정보 숨김
     @NotNull
-    private Long userId;
+    private User user;
 
-    @Comment("즐겨찾기 상태")
+    @Comment("북마크 상태")
     @Column()
     @NotNull
     private boolean enabled; //  true 즐겨찾기, false 즐겨찾기 취소
@@ -41,12 +46,12 @@ public class BookMark {
     @NotNull
     private Long sort;
 
-    @Comment("즐겨찾기 생성 날짜")
+    @Comment("북마크 생성 날짜")
     @Column()
     @NotNull
     private ZonedDateTime created;
 
-    @Comment("즐겨찾기 수정 날짜")
+    @Comment("북마크 수정 날짜")
     @Column()
     private ZonedDateTime modified;
 

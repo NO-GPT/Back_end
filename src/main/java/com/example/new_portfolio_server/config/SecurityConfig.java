@@ -1,8 +1,6 @@
 package com.example.new_portfolio_server.config;
 
-import com.example.new_portfolio_server.portfolioCRUD.PortfolioRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -10,8 +8,11 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -31,15 +32,11 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(authorizeRequests -> authorizeRequests
+                .authorizeHttpRequests(
+                        authorizeRequests -> authorizeRequests
                         .requestMatchers("/users").permitAll()              // 인증없이 접속 가능
                         .requestMatchers("/users/signup").permitAll()       // 회원가입도
                         .requestMatchers("/auth/login").permitAll()         // 로그인도 마찬가지
-                        .requestMatchers("/portfolio").permitAll()
-                        .requestMatchers("/portfolio/{id}").permitAll()
-                        .requestMatchers("/files").permitAll()
-                        .requestMatchers("/files/upload").permitAll()
-                        .requestMatchers("/files/{id}").permitAll()
                         .anyRequest().authenticated()                         // 나머지 경로는 모두 인증 필요
                 )
 //                .userDetailsService(userDetailsService)                     // 시큐리티 6부턴 자동으로 감지 한다던데??

@@ -83,6 +83,11 @@ public class AuthService {
                 return ApiResponse.error("유효하지 않은 리프레시 토큰입니다.");
             }
 
+            // 토큰 타입 확인
+            if (!"refresh".equals(jwtTokenProvider.getTokenType(refreshToken))) {
+                return ApiResponse.error("리프레시 토큰이 아닙니다.");
+            }
+
             // 토큰에서 사용자 이름 추출
             String username = jwtTokenProvider.getUsername(refreshToken);
 
@@ -113,6 +118,11 @@ public class AuthService {
             //액세스 토큰 유효성 검사
             if (!jwtTokenProvider.validateToken(accessToken)) {
                 return ApiResponse.error("유효하지 않은 액세스 토큰입니다.");
+            }
+
+            // 토큰 타입 확인
+            if (!"access".equals(jwtTokenProvider.getTokenType(accessToken))) {
+                return ApiResponse.error("액세스 토큰이 아닙니다.");
             }
 
             //사용자 이름 추출

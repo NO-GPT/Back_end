@@ -1,9 +1,11 @@
 package com.example.new_portfolio_server.auth;
 
 import com.example.new_portfolio_server.auth.Dto.RequestLogin;
-import com.example.new_portfolio_server.common.ApiResponse;
+import com.example.new_portfolio_server.common.Response.ApiResponse;
 import com.example.new_portfolio_server.common.Response.JWTAuthResponse;
+import com.example.new_portfolio_server.config.JwtTokenProvider;
 import com.example.new_portfolio_server.config.redis.RedisServiceImpl;
+import com.example.new_portfolio_server.user.MyUserDetailsService;
 import com.example.new_portfolio_server.user.User;
 import com.example.new_portfolio_server.user.UserRepository;
 import io.jsonwebtoken.JwtException;
@@ -14,11 +16,14 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.time.Duration;
+import java.util.Optional;
 
 @Slf4j
 @Transactional

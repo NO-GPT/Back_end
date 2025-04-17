@@ -1,21 +1,19 @@
 package com.example.new_portfolio_server.user;
 
-import com.example.new_portfolio_server.common.ApiResponse;
+import com.example.new_portfolio_server.common.Response.ApiResponse;
 import com.example.new_portfolio_server.user.Dto.CreateUserDto;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/users")
 public class UserController {
     private final UserService userService;
-
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<User>>> getUsers() {

@@ -1,21 +1,19 @@
 package com.example.new_portfolio_server.config;
 
-import com.example.new_portfolio_server.config.redis.RedisServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity          // http 보안 요청
@@ -24,9 +22,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 //    private final UserDetailsService userDetailsService;                  // 스프링 시쿠리티6 부턴 자동으로 주입 ??
-    private final JwtTokenProvider jwtTokenProvider;
-    private final JwtAuthenticationEntryPoint authenticationEntryPoint;
-    private final RedisServiceImpl redisServiceImpl;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -34,29 +29,16 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws
-            Exception {
-        return authenticationConfiguration.getAuthenticationManager();
-    }
-
-    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> session   // 새션 로그인
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
-//                        .requestMatchers("/users").permitAll()              // 인증없이 접속 가능
-                        .requestMatchers("/users/signup").permitAll()       // 회원가입도
-                        .requestMatchers("/auth/login").permitAll()         // 로그인도 마찬가지
-                        .requestMatchers("/auth/reissue").permitAll()       // 토큰 재 발급도
-                        .anyRequest().authenticated()                         // 나머지 경로는 모두 인증 필요
+                                .requestMatchers("/users").permitAll()              // 인증없이 접속 가능
+                                .requestMatchers("/users/signup").permitAll()       // 회원가입도
+                                .requestMatchers("/auth/login").permitAll()         // 로그인도 마찬가지
+                                .anyRequest().authenticated()                         // 나머지 경로는 모두 인증 필요
                 )
 //                .userDetailsService(userDetailsService)                     // 시큐리티 6부턴 자동으로 감지 한다던데??
-                .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint(authenticationEntryPoint))
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisServiceImpl), UsernamePasswordAuthenticationFilter.class)
                 .httpBasic(Customizer.withDefaults());                        // http 기본 인증??
         return http.build();
     }

@@ -1,6 +1,6 @@
 package com.example.new_portfolio_server.user;
 
-import com.example.new_portfolio_server.common.Response.ApiResponse;
+import com.example.new_portfolio_server.common.ApiResponse;
 import com.example.new_portfolio_server.user.Dto.CreateUserDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

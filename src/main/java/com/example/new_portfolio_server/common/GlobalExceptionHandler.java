@@ -1,6 +1,5 @@
-package com.example.new_portfolio_server.common.Exception;
+package com.example.new_portfolio_server.common;
 
-import com.example.new_portfolio_server.common.Response.ApiResponse;
 import io.jsonwebtoken.JwtException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

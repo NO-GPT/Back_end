@@ -32,8 +32,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(
-                        authorizeRequests -> authorizeRequests
+                .authorizeHttpRequests(authorizeRequests -> authorizeRequests
                         .requestMatchers("/users").permitAll()              // 인증없이 접속 가능
                         .requestMatchers("/users/signup").permitAll()       // 회원가입도
                         .requestMatchers("/auth/login").permitAll()         // 로그인도 마찬가지

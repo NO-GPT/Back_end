@@ -1,10 +1,15 @@
 package com.example.new_portfolio_server.user;
 
+import com.example.new_portfolio_server.bookmark.BookMark;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Comment;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Builder
@@ -61,6 +66,22 @@ public class User {
     @Comment("계정 업데이트 시간")
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties("user") // 순환 참조 방지
+    private List<BookMark> bookMarks = new ArrayList<>();
+
+    // BookMark 추가 헬퍼 메서드
+    public void addBookMark(BookMark bookMark) {
+        bookMarks.add(bookMark);
+        bookMark.setUser(this);
+    }
+
+    // BookMark 제거 헬퍼 메서드
+    public void removeBookMark(BookMark bookMark) {
+        bookMarks.remove(bookMark);
+        bookMark.setUser(null);
+    }
 
     @PrePersist
     protected void onCreate() {

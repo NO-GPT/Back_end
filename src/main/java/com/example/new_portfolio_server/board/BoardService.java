@@ -1,8 +1,10 @@
 package com.example.new_portfolio_server.board;
 
 import com.example.new_portfolio_server.board.dto.BoardDto;
+import com.example.new_portfolio_server.board.dto.UpdateBoardDto;
 import com.example.new_portfolio_server.board.entity.File;
 import com.example.new_portfolio_server.board.entity.Portfolio;
+import com.example.new_portfolio_server.common.Exception.DuplicateResourceException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,54 +20,32 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-@Transactional //
+@Transactional
 public class BoardService {
     @Autowired
     private final PortfolioRepository portfolioRepository;
     private final FileRepository fileRepository;
 
-    // 게시
     public Portfolio createPortfolio(BoardDto boardDto) throws IOException {
-        Portfolio portfolio = Portfolio.builder()
-                .createDate(boardDto.getCreateDate())
-                .updateDate(boardDto.getUpdateDate())
-                .introduce(boardDto.getIntroduce())
-                .part(boardDto.getPart())
-                .content(boardDto.getContent())
-                .links(boardDto.getLinks())
-                .skills(boardDto.getSkills())
-                .build();
-
+        Portfolio portfolio = boardDto.toEntity();
         Portfolio saved = portfolioRepository.save(portfolio);
 
-        if(boardDto.getFiles() != null){
-            for (MultipartFile file : boardDto.getFiles()){
-//                validImage(file);
+        if (boardDto.getFiles() != null && !boardDto.getFiles().isEmpty()) {
+            for (MultipartFile file : boardDto.getFiles()) {
                 fileRepository.save(toFileEntity(file, saved));
             }
         }
+
         return saved;
     }
 
     // 수정
-    public Portfolio updatePortfolio(Long id, BoardDto boardDto) throws IOException{
+    public Portfolio updatePortfolio(Long id, UpdateBoardDto boardDto) {
         Portfolio existing = portfolioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("포트폴리오가 존재하지 않습니다."));
+                .orElseThrow(() -> new DuplicateResourceException("포트폴리오가 존재하지 않습니다."));
 
-        existing.setUpdateDate(boardDto.getUpdateDate());
-        existing.setIntroduce(boardDto.getIntroduce());
-        existing.setPart(boardDto.getPart());
-        existing.setContent(boardDto.getContent());
-        existing.setLinks(boardDto.getLinks());
-        existing.setSkills(boardDto.getSkills());
-
-        fileRepository.deleteAll(fileRepository.findByPortfolioId(id));
-
-        if(boardDto.getFiles() != null){
-            for(MultipartFile file : boardDto.getFiles()){
-                fileRepository.save(toFileEntity(file, existing));
-            }
-        }
+        // DTO를 사용해 엔티티 업데이트
+        boardDto.applyTo(existing);
 
         return portfolioRepository.save(existing);
     }
@@ -78,7 +58,7 @@ public class BoardService {
     // 부분 조회
     public Portfolio getPortfolioById(Long id){
         return portfolioRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("포트폴리오가 존재하지 않습니다."));
+                .orElseThrow(() -> new DuplicateResourceException("포트폴리오가 존재하지 않습니다."));
     }
 
     public Optional<File> getFile(Long id) {

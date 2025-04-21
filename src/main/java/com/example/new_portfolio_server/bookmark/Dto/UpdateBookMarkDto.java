@@ -1,7 +1,6 @@
 package com.example.new_portfolio_server.bookmark.Dto;
 
 import com.example.new_portfolio_server.bookmark.BookMark;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Getter

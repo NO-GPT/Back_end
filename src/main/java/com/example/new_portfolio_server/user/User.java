@@ -1,8 +1,8 @@
 package com.example.new_portfolio_server.user;
 
+import com.example.new_portfolio_server.board.entity.Portfolio;
 import com.example.new_portfolio_server.bookmark.BookMark;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Comment;
@@ -71,6 +71,10 @@ public class User {
     @JsonIgnoreProperties("user") // 순환 참조 방지
     private List<BookMark> bookMarks = new ArrayList<>();
 
+    @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties("userId") // 순환 참조 방지
+    private List<Portfolio> portfolios = new ArrayList<>();
+
     // BookMark 추가 헬퍼 메서드
     public void addBookMark(BookMark bookMark) {
         bookMarks.add(bookMark);
@@ -87,6 +91,18 @@ public class User {
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
+    }
+
+    // Portfolio 추가 헬퍼 메서드
+    public void addPortfolio(Portfolio portfolio) {
+        portfolios.add(portfolio);
+        portfolio.setUserId(this);
+    }
+
+    // Portfolio 제거 헬퍼 메서드
+    public void removePortfolio(Portfolio portfolio) {
+        portfolios.remove(portfolio);
+        portfolio.setUserId(null);
     }
 
     @PreUpdate

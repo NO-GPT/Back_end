@@ -14,7 +14,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -53,7 +52,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/login").permitAll()         // 로그인도 마찬가지
                         .requestMatchers("/auth/reissue").permitAll()       // 토큰 재 발급도
                         .anyRequest().authenticated()                         // 나머지 경로는 모두 인증 필요
-                );
+                )
 //                .userDetailsService(userDetailsService)                     // 시큐리티 6부턴 자동으로 감지 한다던데??
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(authenticationEntryPoint))

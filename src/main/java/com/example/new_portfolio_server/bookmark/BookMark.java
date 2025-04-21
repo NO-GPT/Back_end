@@ -1,8 +1,8 @@
 package com.example.new_portfolio_server.bookmark;
 
+import com.example.new_portfolio_server.board.entity.Portfolio;
 import com.example.new_portfolio_server.user.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -22,12 +22,12 @@ public class BookMark {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 포폴 기능이 완성되면
-//    @Comment("게시물 id")
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "board_id")
-//    @NotNull
-//    private Board board;
+    @Comment("포트폴리오 id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "portfolio_id")
+    @JsonIgnore // 포폴 정보 숨김
+    @NotNull
+    private Portfolio portfolio;
 
     @Comment("유저 id")
     @ManyToOne(fetch = FetchType.LAZY)

@@ -1,12 +1,12 @@
 package com.example.new_portfolio_server.board;
 
 import com.example.new_portfolio_server.board.dto.BoardDto;
-import com.example.new_portfolio_server.board.entity.File;
+import com.example.new_portfolio_server.board.dto.UpdateBoardDto;
 import com.example.new_portfolio_server.board.entity.Portfolio;
+import com.example.new_portfolio_server.common.Response.ApiResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,48 +19,79 @@ import java.util.List;
 @RequestMapping("/portfolio")
 public class BoardController {
 
+    private final PortfolioRepository portfolioRepository;
     private final BoardService boardService;
 
     // 게시
     @PostMapping
-    public ResponseEntity<?> createPortfolio(@ModelAttribute BoardDto boardDto, List<MultipartFile> files) throws IOException{
+    public ApiResponse<?> createPortfolio(
+            @ModelAttribute @Valid BoardDto boardDto,
+            List<MultipartFile> files) throws IOException {
         boardDto.setFiles(files);
-        return ResponseEntity.ok(boardService.createPortfolio(boardDto));
+        if (boardDto.getFiles() == null || boardDto.getFiles().isEmpty()) {
+            return ApiResponse
+                    .error("파일이 전달되지 않았습니다.");
+        }
+        return ApiResponse
+                .success(boardService.createPortfolio(boardDto));
     }
 
-    // 전체 조회
+    // 전체 게시물 조회
     @GetMapping("/list")
-    public ResponseEntity<List<Portfolio>> getAllPortfolio() {
-        return ResponseEntity.ok(boardService.getAllPortfolio());
+    public ResponseEntity<ApiResponse<List<Portfolio>>> getAllPortfolio() {
+        List<Portfolio> portfolios = boardService.getAllPortfolio();
+        return ResponseEntity
+                .ok(ApiResponse
+                        .success(portfolios));
     }
 
-    // 부분 조회
+    // id값으로 게시글 조회
     @GetMapping("/{id}")
-    public ResponseEntity<Portfolio> getPortfolioById(@PathVariable Long id){
-        return ResponseEntity.ok(boardService.getPortfolioById(id));
+    public ResponseEntity<ApiResponse<Portfolio>> getPortfolioById(@PathVariable Long id) {
+        if (!portfolioRepository.existsById(id)) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse
+                            .error("포트폴리오가 존재하지 않습니다."));
+        }
+        Portfolio portfolio = boardService.getPortfolioById(id);
+
+        return ResponseEntity
+                .ok(ApiResponse
+                        .success(portfolio));
     }
 
-    // 이미지 확인(부분)
-    @GetMapping("/image/{id}")
-    public ResponseEntity<byte[]> getFile(@PathVariable("id") Long id) {
-        return boardService.getFile(id)
-                .map(file -> ResponseEntity.ok()
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFileName() + "\"")
-                        .contentType(MediaType.parseMediaType(file.getContentType()))
-                        .body(file.getData()))
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    // id값으로 수정
+    @PatchMapping("/{id}")
+    public ResponseEntity<ApiResponse<Portfolio>> updatePortfolio(
+            @PathVariable Long id,
+            @ModelAttribute @Valid UpdateBoardDto boardDto) {
+        if (!portfolioRepository.existsById(id)) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse
+                            .error("포트폴리오가 존재하지 않습니다."));
+        }
+        Portfolio updatedPortfolio = boardService.updatePortfolio(id, boardDto);
+
+        return ResponseEntity
+                .ok(ApiResponse
+                        .success(updatedPortfolio));
     }
 
-    // 수정
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updatePortfolio(@PathVariable Long id, @ModelAttribute BoardDto boardDto) throws IOException{
-        return ResponseEntity.ok(boardService.updatePortfolio(id, boardDto));
-    }
-
-    // 삭제
+    // id값으로 삭제
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deletePortfolio(@PathVariable Long id){
+    public ResponseEntity<ApiResponse<String>> deletePortfolio(@PathVariable Long id) {
+        if (!portfolioRepository.existsById(id)) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse
+                            .error("포트폴리오가 존재하지 않습니다."));
+        }
         boardService.delete(id);
-        return ResponseEntity.noContent().build();
+
+        return ResponseEntity
+                .ok(ApiResponse
+                        .success("포트폴리오가 성공적으로 삭제되었습니다.", null));
     }
 }

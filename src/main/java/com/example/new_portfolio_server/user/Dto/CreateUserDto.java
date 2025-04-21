@@ -1,8 +1,10 @@
 package com.example.new_portfolio_server.user.Dto;
 
+import com.example.new_portfolio_server.user.User;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Setter
 @Getter
@@ -44,5 +46,19 @@ public class CreateUserDto {
     private String githubId;
 
     private String profile;
+
+    public User toEntity(PasswordEncoder passwordEncoder) {
+        return User.builder()
+                .username(this.username)
+                .password(passwordEncoder.encode(this.password))
+                .email(this.email)
+                .fullName(this.fullName)
+                .field(this.field)
+                .group(this.group)
+                .stack(this.stack)
+                .githubId(this.githubId)
+                .profile(this.profile)
+                .build();
+    }
 
 }

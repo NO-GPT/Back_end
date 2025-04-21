@@ -2,7 +2,7 @@ package com.example.new_portfolio_server.bookmark;
 
 import com.example.new_portfolio_server.bookmark.Dto.CreateBookMarkDto;
 import com.example.new_portfolio_server.bookmark.Dto.UpdateBookMarkDto;
-import com.example.new_portfolio_server.common.ApiResponse;
+import com.example.new_portfolio_server.common.Response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

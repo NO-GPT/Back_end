@@ -2,7 +2,6 @@ package com.example.new_portfolio_server.user;
 import com.example.new_portfolio_server.common.Exception.DuplicateResourceException;
 import com.example.new_portfolio_server.user.Dto.CreateUserDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -20,19 +19,7 @@ public class UserService {
 
     public Long createUser(CreateUserDto dto) {
         checkUserEmailAndUsername(dto.getUsername(), dto.getEmail(), null);
-
-        User user = User.builder()
-                .username(dto.getUsername())
-                .email(dto.getEmail())
-                .password(passwordEncoder.encode(dto.getPassword()))
-                .fullName(dto.getFullName())
-                .field(dto.getField())
-                .group(dto.getGroup())
-                .stack(dto.getStack())
-                .githubId(dto.getGithubId())
-                .profile(dto.getProfile())
-                .build();
-
+        User user = dto.toEntity(passwordEncoder);
         userRepository.save(user);
 
         return user.getId();

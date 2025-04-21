@@ -3,7 +3,6 @@ package com.example.new_portfolio_server.board.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.web.multipart.MultipartFile;
 
 @Entity
 @Data

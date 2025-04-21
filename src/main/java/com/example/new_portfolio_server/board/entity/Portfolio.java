@@ -1,5 +1,7 @@
 package com.example.new_portfolio_server.board.entity;
 
+import com.example.new_portfolio_server.user.User;
+import com.example.new_portfolio_server.bookmark.BookMark;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -7,7 +9,6 @@ import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import org.springframework.security.core.userdetails.User;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -53,8 +54,11 @@ public class Portfolio {
     @OneToMany(mappedBy = "portfolio", cascade = CascadeType.ALL, orphanRemoval = true) // files PK
     private List<File> files = new ArrayList<>();
 
+    @OneToMany(mappedBy = "portfolio", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BookMark> bookMarks = new ArrayList<>();
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @Column(name = "user_id")
+    @JoinColumn(name = "user_id") // 외래 키 명시
     @JsonIgnore
     private User userId;
 }

@@ -3,6 +3,7 @@ package com.example.new_portfolio_server.bookmark;
 import com.example.new_portfolio_server.board.PortfolioRepository;
 import com.example.new_portfolio_server.board.entity.Portfolio;
 import com.example.new_portfolio_server.bookmark.Dto.CreateBookMarkDto;
+import com.example.new_portfolio_server.bookmark.Dto.ResponseBookmarkDto;
 import com.example.new_portfolio_server.bookmark.Dto.UpdateBookMarkDto;
 import com.example.new_portfolio_server.common.Exception.DuplicateResourceException;
 import com.example.new_portfolio_server.user.User;
@@ -20,11 +21,21 @@ public class BookMarkService {
     private final UserRepository userRepository;
     private final PortfolioRepository portfolioRepository;
 
-    @Transactional(readOnly = true)
-    public List<BookMark> getBookMarks(Long userId) {
+    @Transactional(readOnly = true) // 데이터 조회만을 위해서 readOnly = true
+    public List<ResponseBookmarkDto> getBookMarks(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new DuplicateResourceException("해당 사용자가 존재하지 않습니다."));
-        return user.getBookMarks();
+        List<BookMark> bookMarks = user.getBookMarks();
+
+        // 포트폴리오 정보 포함해서 반환
+        return bookMarks.stream()
+                .map(bookMark -> ResponseBookmarkDto.builder()
+                        .id(bookMark.getId())
+                        .enabled(bookMark.isEnabled())
+                        .sort(bookMark.getSort())
+                        .portfolio(bookMark.getPortfolio())
+                        .build())
+                .toList();
     }
 
     @Transactional
@@ -34,6 +45,11 @@ public class BookMarkService {
 
         Portfolio board = portfolioRepository.findById(dto.getPortfolioId())
                 .orElseThrow(() -> new  DuplicateResourceException("해당 포트폴리오가 존재하지 않습니다."));
+
+        // 이미 북마크가 존재하는지 확인
+        if (bookMarkRepository.existsByUserAndPortfolio(user, board)) {
+            throw new DuplicateResourceException("이미 북마크 된 게시글입니다.");
+        }
 
         BookMark bookMark = dto.toEntity(user, board);
         bookMark.setUser(user);

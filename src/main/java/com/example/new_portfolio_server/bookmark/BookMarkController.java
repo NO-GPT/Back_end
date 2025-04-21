@@ -1,6 +1,7 @@
 package com.example.new_portfolio_server.bookmark;
 
 import com.example.new_portfolio_server.bookmark.Dto.CreateBookMarkDto;
+import com.example.new_portfolio_server.bookmark.Dto.ResponseBookmarkDto;
 import com.example.new_portfolio_server.bookmark.Dto.UpdateBookMarkDto;
 import com.example.new_portfolio_server.common.Response.ApiResponse;
 import jakarta.validation.Valid;
@@ -17,9 +18,9 @@ public class BookMarkController {
     private final BookMarkService bookMarkService;
 
     @GetMapping("/{userId}")
-    public ResponseEntity<ApiResponse<List<BookMark>>> getBookMarks(
+    public ResponseEntity<ApiResponse<List<ResponseBookmarkDto>>> getBookMarks(
             @PathVariable Long userId) {
-        List<BookMark> bookMarks = bookMarkService.getBookMarks(userId);
+        List<ResponseBookmarkDto> bookMarks = bookMarkService.getBookMarks(userId);
 
         return ResponseEntity
                 .ok(ApiResponse

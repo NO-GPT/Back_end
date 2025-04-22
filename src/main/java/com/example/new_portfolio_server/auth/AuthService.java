@@ -1,12 +1,12 @@
 package com.example.new_portfolio_server.auth;
 
 import com.example.new_portfolio_server.auth.Dto.RequestLogin;
-import com.example.new_portfolio_server.common.Response.ApiResponse;
-import com.example.new_portfolio_server.common.Response.JWTAuthResponse;
+import com.example.new_portfolio_server.common.response.ApiResponse;
+import com.example.new_portfolio_server.common.response.JWTAuthResponse;
 import com.example.new_portfolio_server.config.JwtTokenProvider;
 import com.example.new_portfolio_server.config.redis.RedisServiceImpl;
 import com.example.new_portfolio_server.user.MyUserDetailsService;
-import com.example.new_portfolio_server.user.User;
+import com.example.new_portfolio_server.user.entity.User;
 import com.example.new_portfolio_server.user.UserRepository;
 import io.jsonwebtoken.JwtException;
 import jakarta.transaction.Transactional;
@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.time.Duration;
+import java.util.*;
 
 @Slf4j
 @Transactional
@@ -62,11 +63,17 @@ public class AuthService {
         return ApiResponse.success("로그인 성공", token);
     }
 
-    public ApiResponse<User> getProfile() {
+    public ApiResponse<Map<String, Object>> getProfileWithPortfolios() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalStateException("사용자를 찾을 수 없습니다."));
-        return ApiResponse.success(user);
+
+        // 사용자와 작성한 포트폴리오를 함께 반환
+        Map<String, Object> response = new HashMap<>();
+        response.put("user", user);
+        response.put("portfolios", user.getPortfolios());
+
+        return ApiResponse.success(response);
     }
 
     public ApiResponse<String> reissueAccessToken(String refreshToken) {

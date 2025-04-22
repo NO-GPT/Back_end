@@ -1,17 +1,16 @@
 package com.example.new_portfolio_server.auth;
 
 import com.example.new_portfolio_server.auth.Dto.RequestLogin;
-import com.example.new_portfolio_server.common.Response.ApiResponse;
-import com.example.new_portfolio_server.common.Response.JWTAuthResponse;
+import com.example.new_portfolio_server.common.response.ApiResponse;
+import com.example.new_portfolio_server.common.response.JWTAuthResponse;
 import com.example.new_portfolio_server.config.JwtTokenProvider;
-import com.example.new_portfolio_server.user.User;
+import com.example.new_portfolio_server.user.entity.User;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -33,8 +32,8 @@ public class AuthController {
     }
 
     @GetMapping("/profile")
-    public ResponseEntity<ApiResponse<User>> getProfile(){
-        return ResponseEntity.ok(authService.getProfile());
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getProfile() {
+        return ResponseEntity.ok(authService.getProfileWithPortfolios());
     }
 
     @PostMapping("/reissue")

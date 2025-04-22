@@ -1,4 +1,4 @@
-package com.example.new_portfolio_server.common.Response;
+package com.example.new_portfolio_server.common.response;
 
 import lombok.Getter;
 import lombok.Setter;

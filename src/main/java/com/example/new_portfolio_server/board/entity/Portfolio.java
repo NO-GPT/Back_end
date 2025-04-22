@@ -1,9 +1,11 @@
 package com.example.new_portfolio_server.board.entity;
 
-import com.example.new_portfolio_server.user.User;
-import com.example.new_portfolio_server.bookmark.BookMark;
+import com.example.new_portfolio_server.board.listener.PortfolioListener;
+import com.example.new_portfolio_server.user.entity.User;
+import com.example.new_portfolio_server.bookmark.entity.BookMark;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -24,15 +26,13 @@ import java.util.List;
 public class Portfolio {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id; // 식별자
+    private Long id; // 식별자
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
-    @CreatedDate
     @Column(name = "createDate", nullable = false)
     private LocalDateTime createDate; // 게시 날짜
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
-    @LastModifiedDate
     @Column(name = "updateDate")
     private LocalDateTime updateDate; // 수정날짜
 
@@ -59,7 +59,18 @@ public class Portfolio {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id") // 외래 키 명시
-    @JsonIgnore
+    @JsonIgnoreProperties({"portfolios", "bookMarks"}) // 순환 참조 방지
     private User userId;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createDate = LocalDateTime.now();
+        this.updateDate = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updateDate = LocalDateTime.now();
+    }
 }
 

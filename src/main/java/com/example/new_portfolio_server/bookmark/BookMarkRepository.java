@@ -1,7 +1,8 @@
 package com.example.new_portfolio_server.bookmark;
 
 import com.example.new_portfolio_server.board.entity.Portfolio;
-import com.example.new_portfolio_server.user.User;
+import com.example.new_portfolio_server.bookmark.entity.BookMark;
+import com.example.new_portfolio_server.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

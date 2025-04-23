@@ -1,6 +1,6 @@
 package com.example.new_portfolio_server.config;
 
-import com.example.new_portfolio_server.common.Response.ApiResponse;
+import com.example.new_portfolio_server.common.response.ApiResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

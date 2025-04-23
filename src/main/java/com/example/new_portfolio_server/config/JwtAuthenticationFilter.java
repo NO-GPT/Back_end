@@ -1,6 +1,6 @@
 package com.example.new_portfolio_server.config;
 
-import com.example.new_portfolio_server.common.Response.ApiResponse;
+import com.example.new_portfolio_server.common.response.ApiResponse;
 import com.example.new_portfolio_server.config.redis.RedisServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.JwtException;

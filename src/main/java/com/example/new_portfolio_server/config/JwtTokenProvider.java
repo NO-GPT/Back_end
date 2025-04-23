@@ -1,6 +1,6 @@
 package com.example.new_portfolio_server.config;
 
-import com.example.new_portfolio_server.common.Response.JWTAuthResponse;
+import com.example.new_portfolio_server.common.response.JWTAuthResponse;
 import com.example.new_portfolio_server.config.redis.RedisServiceImpl;
 import com.example.new_portfolio_server.user.MyUserDetailsService;
 import io.jsonwebtoken.*;

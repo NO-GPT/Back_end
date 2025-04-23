@@ -1,4 +1,4 @@
-package com.example.new_portfolio_server.bookmark.Dto;
+package com.example.new_portfolio_server.bookmark.dto;
 
 import com.example.new_portfolio_server.board.entity.Portfolio;
 import lombok.Builder;

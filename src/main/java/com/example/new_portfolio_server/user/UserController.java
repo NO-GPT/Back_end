@@ -1,7 +1,8 @@
 package com.example.new_portfolio_server.user;
 
-import com.example.new_portfolio_server.common.Response.ApiResponse;
-import com.example.new_portfolio_server.user.Dto.CreateUserDto;
+import com.example.new_portfolio_server.common.response.ApiResponse;
+import com.example.new_portfolio_server.user.dto.CreateUserDto;
+import com.example.new_portfolio_server.user.entity.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

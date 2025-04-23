@@ -34,11 +34,8 @@ public class BoardDto {
 
     private List<MultipartFile> files;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
-    private LocalDateTime createDate = LocalDateTime.now(); // 생성 시간
-
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
-    private LocalDateTime updateDate = LocalDateTime.now(); // 업데이트 시간
+    @NotNull(message = "유저 ID는 필수입니다.")
+    private Long userId; // 유저 ID 추가
 
     public Portfolio toEntity() {
         return Portfolio.builder()

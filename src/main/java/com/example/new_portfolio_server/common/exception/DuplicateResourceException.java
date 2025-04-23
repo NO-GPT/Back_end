@@ -1,4 +1,4 @@
-package com.example.new_portfolio_server.common.Exception;
+package com.example.new_portfolio_server.common.exception;
 
 //  중복 에러를 메시지로 받기위해
 public class DuplicateResourceException extends RuntimeException {

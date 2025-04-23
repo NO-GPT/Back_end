@@ -2,11 +2,12 @@ package com.example.new_portfolio_server.bookmark;
 
 import com.example.new_portfolio_server.board.PortfolioRepository;
 import com.example.new_portfolio_server.board.entity.Portfolio;
-import com.example.new_portfolio_server.bookmark.Dto.CreateBookMarkDto;
-import com.example.new_portfolio_server.bookmark.Dto.ResponseBookmarkDto;
-import com.example.new_portfolio_server.bookmark.Dto.UpdateBookMarkDto;
-import com.example.new_portfolio_server.common.Exception.DuplicateResourceException;
-import com.example.new_portfolio_server.user.User;
+import com.example.new_portfolio_server.bookmark.dto.CreateBookMarkDto;
+import com.example.new_portfolio_server.bookmark.dto.ResponseBookmarkDto;
+import com.example.new_portfolio_server.bookmark.dto.UpdateBookMarkDto;
+import com.example.new_portfolio_server.bookmark.entity.BookMark;
+import com.example.new_portfolio_server.common.exception.DuplicateResourceException;
+import com.example.new_portfolio_server.user.entity.User;
 import com.example.new_portfolio_server.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

@@ -1,5 +1,6 @@
 package com.example.new_portfolio_server.user;
 
+import com.example.new_portfolio_server.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

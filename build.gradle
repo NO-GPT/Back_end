@@ -3,6 +3,9 @@ plugins {
     id 'org.springframework.boot' version '3.4.3'
     id 'io.spring.dependency-management' version '1.1.7'
 }
+ext {
+    springAiVersion = "1.0.0-M7"
+}
 
 group = 'com.example'
 version = '0.0.1-SNAPSHOT'
@@ -45,8 +48,14 @@ dependencies {
     implementation 'com.nimbusds:nimbus-jose-jwt:9.31'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.5'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'org.springframework.ai:spring-ai-typesense-store'
 
+}
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.ai:spring-ai-bom:$springAiVersion"
+    }
 }
 
 tasks.named('test') {

@@ -1,7 +1,7 @@
-package com.example.new_portfolio_server.bookmark;
+package com.example.new_portfolio_server.bookmark.entity;
 
 import com.example.new_portfolio_server.board.entity.Portfolio;
-import com.example.new_portfolio_server.user.User;
+import com.example.new_portfolio_server.user.entity.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;

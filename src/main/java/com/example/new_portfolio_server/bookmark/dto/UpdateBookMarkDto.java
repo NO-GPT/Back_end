@@ -1,6 +1,6 @@
-package com.example.new_portfolio_server.bookmark.Dto;
+package com.example.new_portfolio_server.bookmark.dto;
 
-import com.example.new_portfolio_server.bookmark.BookMark;
+import com.example.new_portfolio_server.bookmark.entity.BookMark;
 import lombok.*;
 
 @Getter

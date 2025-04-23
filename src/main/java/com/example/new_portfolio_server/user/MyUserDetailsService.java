@@ -1,5 +1,6 @@
 package com.example.new_portfolio_server.user;
 
+import com.example.new_portfolio_server.user.entity.User;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;

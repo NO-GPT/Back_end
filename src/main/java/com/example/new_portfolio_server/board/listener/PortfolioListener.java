@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 public class PortfolioListener {
     private static final Logger logger = LoggerFactory.getLogger(PortfolioListener.class);
 
-    private final @Lazy BoardService boardService;
+    private final BoardService boardService;
 
     @PostPersist
     @PostUpdate
@@ -37,10 +37,6 @@ public class PortfolioListener {
             String portfolioId = String.valueOf(portfolio.getId());
             boardService.getTypesenseClient()
                     .collections(BoardService.PORTFOLIO_COLLECTION)
-                    .documents(portfolioId)
-                    .delete();
-            boardService.getTypesenseClient()
-                    .collections(BoardService.PORTFOLIO_WITH_USERS_COLLECTION)
                     .documents(portfolioId)
                     .delete();
             logger.debug("Portfolio deleted from Typesense successfully: ID={}", portfolioId);

@@ -25,23 +25,6 @@ public class BoardController {
     private final BoardService boardService;
     private static final Logger logger = LoggerFactory.getLogger(BoardController.class);
 
-    @GetMapping("/search")
-    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> searchPortfolios(
-            @RequestParam("keyword") String keyword) {
-        logger.debug("Handling portfolio search with keyword: {}", keyword);
-        try {
-            List<Map<String, Object>> results = boardService.searchPortfolios(keyword);
-            logger.debug("Portfolio search results: {} items", results.size());
-            return ResponseEntity.ok(ApiResponse.success(results));
-        } catch (Exception e) {
-            logger.error("Portfolio search failed for keyword '{}': {}", keyword, e.getMessage(), e);
-            String message = e.getMessage().contains("collection not found")
-                    ? "Portfolio collection not found. Please reindex data."
-                    : "Portfolio search failed: " + e.getMessage();
-            return ResponseEntity.status(500).body(ApiResponse.error(message));
-        }
-    }
-
     @GetMapping("/search-with-users")
     public ResponseEntity<ApiResponse<List<Map<String, Object>>>> searchPortfoliosAndUsers(
             @RequestParam("keyword") String keyword) {

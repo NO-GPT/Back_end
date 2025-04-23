@@ -38,61 +38,65 @@ public class BoardService {
     private final Client typesenseClient;
 
     public static final String PORTFOLIO_COLLECTION = "portfolios";
-    public static final String PORTFOLIO_WITH_USERS_COLLECTION = "portfolios_with_users";
+    public static final String USERS_COLLECTION = "users";
 
     public void initializeCollections() {
         logger.info("Initializing Typesense collections");
         try {
-            typesenseClient.collections(PORTFOLIO_COLLECTION).delete();
-            logger.debug("Deleted existing portfolio collection");
-        } catch (Exception e) {
-            logger.debug("No existing portfolio collection to delete: {}", e.getMessage());
-        }
+            // 포트폴리오 컬렉션
+            try {
+                typesenseClient.collections(PORTFOLIO_COLLECTION).delete();
+                logger.debug("Deleted existing portfolio collection");
+            } catch (Exception e) {
+                logger.debug("No existing portfolio collection to delete: {}", e.getMessage());
+            }
 
-        List<Field> portfolioFields = Arrays.asList(
-                new Field().name("id").type("string"),
-                new Field().name("introduce").type("string"),
-                new Field().name("skills").type("string"),
-                new Field().name("part").type("string"),
-                new Field().name("created_at").type("int64")
-        );
+            List<Field> portfolioFields = Arrays.asList(
+                    new Field().name("id").type("string"),
+                    new Field().name("introduce").type("string").infix(true),
+                    new Field().name("part").type("string").infix(true),
+                    new Field().name("content").type("string").infix(true),
+                    new Field().name("links").type("string").infix(true),
+                    new Field().name("skills").type("string").infix(true),
+                    new Field().name("createDate").type("int64"),
+                    new Field().name("updateDate").type("int64")
+            );
+            CollectionSchema portfolioSchema = new CollectionSchema()
+                    .name(PORTFOLIO_COLLECTION)
+                    .fields(portfolioFields);
 
-        CollectionSchema portfolioSchema = new CollectionSchema()
-                .name(PORTFOLIO_COLLECTION)
-                .fields(portfolioFields);
+            // 유저 컬렉션
+            try {
+                typesenseClient.collections(USERS_COLLECTION).delete();
+                logger.debug("Deleted existing users collection");
+            } catch (Exception e) {
+                logger.debug("No existing users collection to delete: {}", e.getMessage());
+            }
 
-        try {
-            typesenseClient.collections(PORTFOLIO_WITH_USERS_COLLECTION).delete();
-            logger.debug("Deleted existing portfolio_with_users collection");
-        } catch (Exception e) {
-            logger.debug("No existing portfolio_with_users collection to delete: {}", e.getMessage());
-        }
+            List<Field> userFields = Arrays.asList(
+                    new Field().name("id").type("string"),
+                    new Field().name("username").type("string").infix(true),
+                    new Field().name("email").type("string").infix(true),
+                    new Field().name("fullName").type("string").infix(true),
+                    new Field().name("field").type("string").infix(true),
+                    new Field().name("group").type("string").infix(true),
+                    new Field().name("stack").type("string").infix(true),
+                    new Field().name("githubId").type("string").infix(true),
+                    new Field().name("profile").type("string").optional(true).infix(true),
+                    new Field().name("createdAt").type("int64"),
+                    new Field().name("updatedAt").type("int64")
+            );
+            CollectionSchema userSchema = new CollectionSchema()
+                    .name(USERS_COLLECTION)
+                    .fields(userFields);
 
-        List<Field> portfolioWithUsersFields = Arrays.asList(
-                new Field().name("id").type("string"),
-                new Field().name("introduce").type("string"),
-                new Field().name("skills").type("string"),
-                new Field().name("part").type("string"),
-                new Field().name("username").type("string"),
-                new Field().name("field").type("string"),
-                new Field().name("full_name").type("string"),
-                new Field().name("email").type("string"),
-                new Field().name("github_id").type("string"),
-                new Field().name("stack").type("string"),
-                new Field().name("user_group").type("string"),
-                new Field().name("created_at").type("int64")
-        );
-
-        CollectionSchema portfolioWithUsersSchema = new CollectionSchema()
-                .name(PORTFOLIO_WITH_USERS_COLLECTION)
-                .fields(portfolioWithUsersFields);
-
-        try {
             typesenseClient.collections().create(portfolioSchema);
-            typesenseClient.collections().create(portfolioWithUsersSchema);
+            typesenseClient.collections().create(userSchema);
             logger.info("Typesense collections created successfully");
+
             indexAllPortfolios();
-            logger.info("All portfolios indexed successfully");
+            indexAllUsers();
+            logger.info("All portfolios and users indexed successfully");
         } catch (Exception e) {
             logger.error("Failed to initialize Typesense collections: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to initialize Typesense collections", e);
@@ -104,99 +108,197 @@ public class BoardService {
         logger.debug("Indexing {} portfolios", portfolios.size());
         if (portfolios.isEmpty()) {
             logger.warn("No portfolios found in database to index");
+            return;
         }
         for (Portfolio portfolio : portfolios) {
-            indexPortfolio(portfolio);
+            try {
+                indexPortfolio(portfolio);
+            } catch (Exception e) {
+                logger.error("Failed to index portfolio ID={}: {}", portfolio.getId(), e.getMessage());
+            }
+        }
+    }
+
+    private void indexAllUsers() throws Exception {
+        List<User> users = userRepository.findAll();
+        logger.debug("Indexing {} users", users.size());
+        if (users.isEmpty()) {
+            logger.warn("No users found in database to index");
+            return;
+        }
+        for (User user : users) {
+            try {
+                indexUser(user);
+            } catch (Exception e) {
+                logger.error("Failed to index user ID={}: {}", user.getId(), e.getMessage());
+            }
         }
     }
 
     public void indexPortfolio(Portfolio portfolio) throws Exception {
+        if (portfolio == null) {
+            logger.error("Portfolio is null, cannot index");
+            throw new IllegalArgumentException("Portfolio cannot be null");
+        }
+
         Map<String, Object> portfolioDoc = new HashMap<>();
-        portfolioDoc.put("id", portfolio.getId().toString());
-        portfolioDoc.put("introduce", portfolio.getIntroduce());
-        portfolioDoc.put("skills", portfolio.getSkills());
-        portfolioDoc.put("part", portfolio.getPart());
-        portfolioDoc.put("created_at", portfolio.getCreateDate().toEpochSecond(ZoneOffset.UTC));
-        typesenseClient.collections(PORTFOLIO_COLLECTION).documents().upsert(portfolioDoc);
-
-        User user = portfolio.getUserId();
-        Map<String, Object> portfolioWithUserDoc = new HashMap<>();
-        portfolioWithUserDoc.put("id", portfolio.getId().toString());
-        portfolioWithUserDoc.put("introduce", portfolio.getIntroduce());
-        portfolioWithUserDoc.put("skills", portfolio.getSkills());
-        portfolioWithUserDoc.put("part", portfolio.getPart());
-        portfolioWithUserDoc.put("username", user.getUsername());
-        portfolioWithUserDoc.put("field", user.getField());
-        portfolioWithUserDoc.put("full_name", user.getFullName());
-        portfolioWithUserDoc.put("email", user.getEmail());
-        portfolioWithUserDoc.put("github_id", user.getGithubId() != null ? user.getGithubId() : "");
-        portfolioWithUserDoc.put("stack", user.getStack());
-        portfolioWithUserDoc.put("user_group", user.getGroup());
-        portfolioWithUserDoc.put("created_at", portfolio.getCreateDate().toEpochSecond(ZoneOffset.UTC));
-        typesenseClient.collections(PORTFOLIO_WITH_USERS_COLLECTION).documents().upsert(portfolioWithUserDoc);
-
-        logger.debug("Portfolio indexed successfully: ID={}", portfolio.getId());
-    }
-
-    public List<Map<String, Object>> searchPortfolios(String keyword) throws Exception {
-        logger.debug("Searching portfolios with keyword: {}", keyword);
-        SearchParameters searchParameters = new SearchParameters();
-        searchParameters.setQ(keyword);
-        searchParameters.setQueryBy("introduce,skills,part");
-        searchParameters.setNumTypos("2");
+        portfolioDoc.put("id", String.valueOf(portfolio.getId()));
+        portfolioDoc.put("introduce", portfolio.getIntroduce() != null ? portfolio.getIntroduce() : "");
+        portfolioDoc.put("part", portfolio.getPart() != null ? portfolio.getPart() : "");
+        portfolioDoc.put("content", portfolio.getContent() != null ? portfolio.getContent() : "");
+        portfolioDoc.put("links", portfolio.getLinks() != null ? portfolio.getLinks() : "");
+        portfolioDoc.put("skills", portfolio.getSkills() != null ? portfolio.getSkills() : "");
+        portfolioDoc.put("createDate", portfolio.getCreateDate() != null ? portfolio.getCreateDate().toEpochSecond(ZoneOffset.UTC) : 0);
+        portfolioDoc.put("updateDate", portfolio.getUpdateDate() != null ? portfolio.getUpdateDate().toEpochSecond(ZoneOffset.UTC) : 0);
+        logger.debug("Indexing portfolio document: {}", portfolioDoc);
 
         try {
-            typesenseClient.collections(PORTFOLIO_COLLECTION).retrieve();
-            SearchResult searchResult = typesenseClient.collections(PORTFOLIO_COLLECTION).documents().search(searchParameters);
-            List<Map<String, Object>> results = searchResult.getHits().stream()
-                    .map(SearchResultHit::getDocument)
-                    .collect(Collectors.toList());
-            logger.debug("Found {} portfolio search results for keyword: {}", results.size(), keyword);
-            return results;
-        } catch (ObjectNotFound e) {
-            logger.error("Portfolio collection not found for keyword '{}': {}", keyword, e.getMessage());
-            throw new RuntimeException("Portfolio collection not found. Please ensure data is indexed.", e);
+            typesenseClient.collections(PORTFOLIO_COLLECTION).documents().upsert(portfolioDoc);
+            logger.debug("Portfolio document indexed: ID={}", portfolio.getId());
         } catch (Exception e) {
-            logger.error("Failed to search portfolios: {}", e.getMessage(), e);
-            throw new RuntimeException("Portfolio search failed: " + e.getMessage(), e);
+            logger.error("Failed to index portfolio document ID={}: {}", portfolio.getId(), e.getMessage());
+            throw new RuntimeException("Failed to index portfolio document: " + e.getMessage(), e);
+        }
+    }
+
+    private void indexUser(User user) throws Exception {
+        if (user == null) {
+            logger.error("User is null, cannot index");
+            throw new IllegalArgumentException("User cannot be null");
+        }
+
+        Map<String, Object> userDoc = new HashMap<>();
+        userDoc.put("id", String.valueOf(user.getId()));
+        userDoc.put("username", user.getUsername() != null ? user.getUsername() : "");
+        userDoc.put("email", user.getEmail() != null ? user.getEmail() : "");
+        userDoc.put("fullName", user.getFullName() != null ? user.getFullName() : "");
+        userDoc.put("field", user.getField() != null ? user.getField() : "");
+        userDoc.put("group", user.getGroup() != null ? user.getGroup() : "");
+        userDoc.put("stack", user.getStack() != null ? user.getStack() : "");
+        userDoc.put("githubId", user.getGithubId() != null ? user.getGithubId() : "");
+        userDoc.put("profile", user.getProfile() != null ? user.getProfile() : null);
+        userDoc.put("createdAt", user.getCreatedAt() != null ? user.getCreatedAt().toEpochSecond(ZoneOffset.UTC) : 0);
+        userDoc.put("updatedAt", user.getUpdatedAt() != null ? user.getUpdatedAt().toEpochSecond(ZoneOffset.UTC) : 0);
+        logger.debug("Indexing user document: {}", userDoc);
+
+        try {
+            typesenseClient.collections(USERS_COLLECTION).documents().upsert(userDoc);
+            logger.debug("User document indexed: ID={}", user.getId());
+        } catch (Exception e) {
+            logger.error("Failed to index user document ID={}: {}", user.getId(), e.getMessage());
+            throw new RuntimeException("Failed to index user document: " + e.getMessage(), e);
         }
     }
 
     public List<Map<String, Object>> searchPortfoliosAndUsers(String keyword) throws Exception {
         logger.debug("Searching portfolios and users with keyword: {}", keyword);
-        SearchParameters searchParameters = new SearchParameters();
-        searchParameters.setQ(keyword);
-        searchParameters.setQueryBy("introduce,skills,part,username,field,full_name,email,github_id,stack,user_group");
-        searchParameters.setNumTypos("2");
+        List<Map<String, Object>> allResults = new ArrayList<>();
+
+        // 포트폴리오 검색
+        SearchParameters portfolioParams = new SearchParameters();
+        portfolioParams.setQ(keyword.isEmpty() ? "*" : keyword);
+        portfolioParams.setQueryBy("introduce,part,content,links,skills");
+        portfolioParams.setNumTypos("2");
+        portfolioParams.setPerPage(100);
+        portfolioParams.setPage(1);
+        portfolioParams.setPrefix("true");
+        portfolioParams.setInfix("always");
 
         try {
-            typesenseClient.collections(PORTFOLIO_WITH_USERS_COLLECTION).retrieve();
-            SearchResult searchResult = typesenseClient.collections(PORTFOLIO_WITH_USERS_COLLECTION).documents().search(searchParameters);
-            List<Map<String, Object>> results = searchResult.getHits().stream()
+            SearchResult portfolioResult = typesenseClient.collections(PORTFOLIO_COLLECTION).documents().search(portfolioParams);
+            List<Map<String, Object>> portfolioResults = portfolioResult.getHits().stream()
                     .map(SearchResultHit::getDocument)
-                    .collect(Collectors.toList());
-            logger.debug("Found {} portfolio and user search results for keyword: {}", results.size(), keyword);
-            return results;
+                    .map(doc -> {
+                        Map<String, Object> portfolioDoc = new HashMap<>();
+                        portfolioDoc.put("id", doc.get("id"));
+                        portfolioDoc.put("introduce", doc.get("introduce"));
+                        portfolioDoc.put("part", doc.get("part"));
+                        portfolioDoc.put("content", doc.get("content"));
+                        portfolioDoc.put("links", doc.get("links"));
+                        portfolioDoc.put("skills", doc.get("skills"));
+                        portfolioDoc.put("createDate", doc.get("createDate"));
+                        portfolioDoc.put("updateDate", doc.get("updateDate"));
+                        portfolioDoc.put("type", "portfolio");
+                        return portfolioDoc;
+                    })
+                    .toList();
+            allResults.addAll(portfolioResults);
+            logger.info("Found {} portfolio search results for keyword: {}", portfolioResults.size(), keyword);
         } catch (ObjectNotFound e) {
-            logger.error("Portfolio with users collection not found for keyword '{}': {}", keyword, e.getMessage());
-            throw new RuntimeException("Portfolio with users collection not found. Please ensure data is indexed.", e);
+            logger.warn("Portfolio collection not found for keyword '{}'", keyword);
         } catch (Exception e) {
-            logger.error("Failed to search portfolios and users: {}", e.getMessage(), e);
-            throw new RuntimeException("Portfolio and user search failed: " + e.getMessage(), e);
+            logger.error("Failed to search portfolios: {}", e.getMessage(), e);
         }
+
+        // 유저 검색
+        SearchParameters userParams = new SearchParameters();
+        userParams.setQ(keyword.isEmpty() ? "*" : keyword);
+        userParams.setQueryBy("username,email,fullName,field,group,stack,githubId");
+        userParams.setNumTypos("2");
+        userParams.setPerPage(100);
+        userParams.setPage(1);
+        userParams.setPrefix("true");
+        userParams.setInfix("always");
+
+        try {
+            SearchResult userResult = typesenseClient.collections(USERS_COLLECTION).documents().search(userParams);
+            List<Map<String, Object>> userResults = userResult.getHits().stream()
+                    .map(SearchResultHit::getDocument)
+                    .map(doc -> {
+                        Map<String, Object> userDoc = new HashMap<>();
+                        userDoc.put("id", doc.get("id"));
+                        userDoc.put("username", doc.get("username"));
+                        userDoc.put("email", doc.get("email"));
+                        userDoc.put("fullName", doc.get("fullName"));
+                        userDoc.put("field", doc.get("field"));
+                        userDoc.put("group", doc.get("group"));
+                        userDoc.put("stack", doc.get("stack"));
+                        userDoc.put("githubId", doc.get("githubId"));
+                        userDoc.put("profile", doc.get("profile"));
+                        userDoc.put("createdAt", doc.get("createdAt"));
+                        userDoc.put("updatedAt", doc.get("updatedAt"));
+                        userDoc.put("type", "user");
+                        return userDoc;
+                    })
+                    .toList();
+            allResults.addAll(userResults);
+            logger.info("Found {} user search results for keyword: {}", userResults.size(), keyword);
+        } catch (ObjectNotFound e) {
+            logger.warn("Users collection not found for keyword '{}'", keyword);
+        } catch (Exception e) {
+            logger.error("Failed to search users: {}", e.getMessage(), e);
+        }
+
+        // 최신순 정렬 (createDate 또는 createdAt 기준)
+        allResults.sort((a, b) -> {
+            Long aTime = a.containsKey("createDate") && a.get("createDate") instanceof Number ?
+                    ((Number) a.get("createDate")).longValue() :
+                    a.containsKey("createdAt") && a.get("createdAt") instanceof Number ?
+                            ((Number) a.get("createdAt")).longValue() : 0L;
+            Long bTime = b.containsKey("createDate") && b.get("createDate") instanceof Number ?
+                    ((Number) b.get("createDate")).longValue() :
+                    b.containsKey("createdAt") && b.get("createdAt") instanceof Number ?
+                            ((Number) b.get("createdAt")).longValue() : 0L;
+            logger.trace("Comparing timestamps: aTime={} (type={}), bTime={} (type={})",
+                    aTime, a.get("createDate") != null ? a.get("createDate").getClass().getSimpleName() :
+                            a.get("createdAt") != null ? a.get("createdAt").getClass().getSimpleName() : "null",
+                    bTime, b.get("createDate") != null ? b.get("createDate").getClass().getSimpleName() :
+                            b.get("createdAt") != null ? b.get("createdAt").getClass().getSimpleName() : "null");
+            return bTime.compareTo(aTime);
+        });
+
+        logger.info("Total {} search results for keyword: {}", allResults.size(), keyword);
+        return allResults;
     }
 
     public void reindexAllPortfolios() {
-        logger.info("Reindexing all portfolios");
+        logger.info("Reindexing all portfolios and users");
         try {
             initializeCollections();
             logger.info("Reindexing completed successfully");
-        } catch (IllegalStateException e) {
-            logger.error("Reindexing failed: {}", e.getMessage(), e);
-            throw e;
         } catch (Exception e) {
             logger.error("Reindexing failed: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to reindex portfolios: " + e.getMessage(), e);
+            throw new RuntimeException("Failed to reindex portfolios and users: " + e.getMessage(), e);
         }
     }
 
@@ -261,7 +363,7 @@ public class BoardService {
 
     private File toFileEntity(MultipartFile file, Portfolio portfolio) throws IOException{
         String uuid = UUID.randomUUID().toString();
-        String name = uuid + "_" + Paths.get(file.getOriginalFilename())
+        String name = uuid + "_" + Paths.get(Objects.requireNonNull(file.getOriginalFilename()))
                 .getFileName()
                 .toString()
                 .replaceAll("[^a-zA-Z0-9.\\-_]", "_"); // 경로 제거

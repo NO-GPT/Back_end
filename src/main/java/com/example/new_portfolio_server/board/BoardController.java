@@ -25,43 +25,40 @@ public class BoardController {
     private final BoardService boardService;
     private static final Logger logger = LoggerFactory.getLogger(BoardController.class);
 
-    @GetMapping("/search-with-users")
+    // 검색
+    @GetMapping("/search")
     public ResponseEntity<ApiResponse<List<Map<String, Object>>>> searchPortfoliosAndUsers(
-            @RequestParam("keyword") String keyword) {
-        logger.debug("Handling portfolio and users search with keyword: {}", keyword);
+            @RequestParam("keyword") String keyword,
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "size", defaultValue = "20") int size) {
         try {
-            List<Map<String, Object>> results = boardService.searchPortfoliosAndUsers(keyword);
-            logger.debug("Portfolio and users search results: {} items", results.size());
-            return ResponseEntity.ok(ApiResponse.success(results));
+            List<Map<String, Object>> results = boardService.searchPortfoliosAndUsers(keyword, page, size);
+            return ResponseEntity
+                    .ok(ApiResponse
+                            .success(results));
         } catch (Exception e) {
-            logger.error("Portfolio and users search failed for keyword '{}': {}", keyword, e.getMessage(), e);
-            String message = e.getMessage().contains("collection not found")
-                    ? "Portfolio with users collection not found. Please reindex data."
-                    : "Portfolio and users search failed: " + e.getMessage();
-            return ResponseEntity.status(500).body(ApiResponse.error(message));
+            logger.error("Search failed for keyword '{}': {}", keyword, e.getMessage());
+            return ResponseEntity
+                    .status(500)
+                    .body(ApiResponse
+                            .error("Search failed: " + e.getMessage()));
         }
     }
 
+    // 컬렉션을 다시 초기화하도록 요청하는 엔드포인트
     @PostMapping("/reindex")
     public ResponseEntity<ApiResponse<String>> reindexPortfolios() {
-        logger.debug("Handling portfolio reindex request");
         try {
-            boardService.reindexAllPortfolios();
-            logger.debug("Portfolio reindex completed");
-
+            boardService.initializeCollections();
             return ResponseEntity
-                    .ok(ApiResponse.success("Portfolios reindexed successfully", "요청이 성공적으로 처리되었습니다"));
-        } catch (IllegalStateException e) {
-            logger.error("Portfolio reindex failed: {}", e.getMessage(), e);
-
-            return ResponseEntity.status(400).body(ApiResponse.error("No portfolios available in database. Please add portfolio data."));
+                    .ok(ApiResponse
+                            .success("Portfolios reindexed successfully"));
         } catch (Exception e) {
-            logger.error("Portfolio reindex failed: {}", e.getMessage(), e);
-            String message = e.getMessage().contains("Connection refused")
-                    ? "Failed to connect to Typesense server. Please check server status."
-                    : "Portfolio reindex failed: " + e.getMessage();
-
-            return ResponseEntity.status(500).body(ApiResponse.error(message));
+            logger.error("Reindex failed: {}", e.getMessage());
+            return ResponseEntity
+                    .status(500)
+                    .body(ApiResponse
+                            .error("Reindex failed: " + e.getMessage()));
         }
     }
 
@@ -98,7 +95,6 @@ public class BoardController {
                             .error("포트폴리오가 존재하지 않습니다."));
         }
         Portfolio portfolio = boardService.getPortfolioById(id);
-
         return ResponseEntity
                 .ok(ApiResponse
                         .success(portfolio));
@@ -116,7 +112,6 @@ public class BoardController {
                             .error("포트폴리오가 존재하지 않습니다."));
         }
         Portfolio updatedPortfolio = boardService.updatePortfolio(id, boardDto);
-
         return ResponseEntity
                 .ok(ApiResponse
                         .success(updatedPortfolio));
@@ -132,7 +127,6 @@ public class BoardController {
                             .error("포트폴리오가 존재하지 않습니다."));
         }
         boardService.delete(id);
-
         return ResponseEntity
                 .ok(ApiResponse
                         .success("포트폴리오가 성공적으로 삭제되었습니다.", null));

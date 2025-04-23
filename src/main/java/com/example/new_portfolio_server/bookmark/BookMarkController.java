@@ -21,7 +21,6 @@ public class BookMarkController {
     public ResponseEntity<ApiResponse<List<ResponseBookmarkDto>>> getBookMarks(
             @PathVariable Long userId) {
         List<ResponseBookmarkDto> bookMarks = bookMarkService.getBookMarks(userId);
-
         return ResponseEntity
                 .ok(ApiResponse
                         .success(bookMarks));
@@ -31,7 +30,6 @@ public class BookMarkController {
     public ResponseEntity<ApiResponse<Long>> createBookMark(
             @RequestBody @Valid CreateBookMarkDto dto) {
         Long bookMarkId = bookMarkService.createBookMark(dto);
-
         return ResponseEntity
                 .ok(ApiResponse
                         .successLong("북마크 생성 성공", bookMarkId));
@@ -42,7 +40,6 @@ public class BookMarkController {
             @PathVariable Long id,
             @RequestBody @Valid UpdateBookMarkDto dto) {
         bookMarkService.updateBookMark(id, dto);
-
         return ResponseEntity
                 .ok(ApiResponse
                         .success("북마크 상태 변경 성공", null));

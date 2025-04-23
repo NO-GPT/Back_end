@@ -6,13 +6,11 @@ import jakarta.persistence.PostPersist;
 import jakarta.persistence.PostRemove;
 import jakarta.persistence.PostUpdate;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.validator.internal.util.stereotypes.Lazy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
+// 포트폴리오 엔티티의 변경(추가, 수정, 삭제)을 감지하여 Typesense 인덱스를 자동으로 업데이트
 @Component
 @RequiredArgsConstructor
 public class PortfolioListener {
@@ -20,6 +18,7 @@ public class PortfolioListener {
 
     private final BoardService boardService;
 
+    // 포트폴리오가 추가(@PostPersist) 또는 수정(@PostUpdate)되면 Typesense에 인덱싱
     @PostPersist
     @PostUpdate
     public void onPortfolioChange(Portfolio portfolio) {
@@ -31,6 +30,7 @@ public class PortfolioListener {
         }
     }
 
+    // 포트폴리오가 삭제(@PostRemove)되면 Typesense에서 제거
     @PostRemove
     public void onPortfolioRemove(Portfolio portfolio) {
         try {

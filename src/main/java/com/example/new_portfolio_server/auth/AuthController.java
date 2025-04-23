@@ -4,7 +4,6 @@ import com.example.new_portfolio_server.auth.Dto.RequestLogin;
 import com.example.new_portfolio_server.common.response.ApiResponse;
 import com.example.new_portfolio_server.common.response.JWTAuthResponse;
 import com.example.new_portfolio_server.config.JwtTokenProvider;
-import com.example.new_portfolio_server.user.entity.User;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,15 +24,19 @@ public class AuthController {
         ApiResponse<JWTAuthResponse> response = authService.loginWithValidation(requestLogin);
 
         if (response.isSuccess()) {
-            return ResponseEntity.ok(response);
+            return ResponseEntity
+                    .ok(response);
         } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(response);
         }
     }
 
     @GetMapping("/profile")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getProfile() {
-        return ResponseEntity.ok(authService.getProfileWithPortfolios());
+        return ResponseEntity
+                .ok(authService.getProfileWithPortfolios());
     }
 
     @PostMapping("/reissue")
@@ -42,9 +45,12 @@ public class AuthController {
         ApiResponse<String> response = authService.reissueAccessToken(refreshToken);
 
         if (response.isSuccess()) {
-            return ResponseEntity.ok(response);
+            return ResponseEntity
+                    .ok(response);
         } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(response);
         }
     }
 
@@ -54,9 +60,12 @@ public class AuthController {
         ApiResponse<String> response = authService.logout(accessToken);
 
         if (response.isSuccess()) {
-            return ResponseEntity.ok(response);
+            return ResponseEntity
+                    .ok(response);
         } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(response);
         }
     }
 }

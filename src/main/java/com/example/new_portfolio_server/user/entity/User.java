@@ -2,7 +2,7 @@ package com.example.new_portfolio_server.user.entity;
 
 import com.example.new_portfolio_server.board.entity.Portfolio;
 import com.example.new_portfolio_server.bookmark.entity.BookMark;
-import com.example.new_portfolio_server.user.listener.UserListener;
+import com.example.new_portfolio_server.comments.entity.Comments;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
@@ -77,6 +77,12 @@ public class User {
 //    @JsonIgnoreProperties("userId") // 순환 참조 방지
     @JsonIgnore
     private List<Portfolio> portfolios = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Comments> comments = new ArrayList<>();
+
+
 
     // BookMark 추가 헬퍼 메서드
     public void addBookMark(BookMark bookMark) {

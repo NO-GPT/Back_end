@@ -1,6 +1,6 @@
 package com.example.new_portfolio_server.board.entity;
 
-import com.example.new_portfolio_server.board.listener.PortfolioListener;
+import com.example.new_portfolio_server.comments.entity.Comments;
 import com.example.new_portfolio_server.user.entity.User;
 import com.example.new_portfolio_server.bookmark.entity.BookMark;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -8,8 +8,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
@@ -54,6 +52,10 @@ public class Portfolio {
     @OneToMany(mappedBy = "portfolio", cascade = CascadeType.ALL, orphanRemoval = true) // files PK
     private List<File> files = new ArrayList<>();
 
+    @JsonIgnore
+    @OneToMany(mappedBy = "portfolio", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comments> comments = new ArrayList<>();
+
     @OneToMany(mappedBy = "portfolio", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BookMark> bookMarks = new ArrayList<>();
 
@@ -72,5 +74,6 @@ public class Portfolio {
     protected void onUpdate() {
         this.updateDate = LocalDateTime.now();
     }
+
 }
 

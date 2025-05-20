@@ -46,6 +46,7 @@ public class CommentService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않은 댓글입니다."));
 
         comments.setBody(commentEditRequestDto.getBody());
+        commentRepository.save(comments);
 
         return CommentResponseDto.fromEntity(comments);
     }

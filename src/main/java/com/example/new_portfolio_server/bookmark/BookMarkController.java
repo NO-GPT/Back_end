@@ -4,6 +4,7 @@ import com.example.new_portfolio_server.bookmark.dto.CreateBookMarkDto;
 import com.example.new_portfolio_server.bookmark.dto.ResponseBookmarkDto;
 import com.example.new_portfolio_server.bookmark.dto.UpdateBookMarkDto;
 import com.example.new_portfolio_server.common.response.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/bookmark")
+@Tag(name = "Book_Mark API", description = "북마크 관련 API")
 @RequiredArgsConstructor
 public class BookMarkController {
     private final BookMarkService bookMarkService;

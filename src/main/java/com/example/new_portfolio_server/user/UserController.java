@@ -3,6 +3,7 @@ package com.example.new_portfolio_server.user;
 import com.example.new_portfolio_server.common.response.ApiResponse;
 import com.example.new_portfolio_server.user.dto.CreateUserDto;
 import com.example.new_portfolio_server.user.entity.User;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/users")
+@Tag(name = "User API", description = "사용자 관련 API")
 public class UserController {
     private final UserService userService;
 

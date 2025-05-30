@@ -4,6 +4,7 @@ import com.example.new_portfolio_server.comments.dto.CommentEditRequestDto;
 import com.example.new_portfolio_server.comments.dto.CommentRequestDto;
 import com.example.new_portfolio_server.comments.dto.CommentResponseDto;
 import com.example.new_portfolio_server.comments.entity.Comments;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +15,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/comment")
+@Tag(name = "Comment API", description = "댓글 관련 API")
 public class CommentController {
 
     private final CommentService commentService;

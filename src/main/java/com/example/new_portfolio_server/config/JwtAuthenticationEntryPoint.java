@@ -24,6 +24,9 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
                          HttpServletResponse res,
                          AuthenticationException authException) throws IOException, ServletException {
         String requestURI = req.getRequestURI();
+        if (requestURI.startsWith("/v3/api-docs") || requestURI.startsWith("/swagger-ui")) {
+            return; // Swagger 경로의 인증 실패 무시
+        }
         String token = req.getHeader("Authorization");
         String tokenInfo = token != null ? token.substring(0, Math.min(10, token.length())) : "없음";
         String message = authException.getMessage();

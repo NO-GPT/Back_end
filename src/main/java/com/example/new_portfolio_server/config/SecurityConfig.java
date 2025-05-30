@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -43,21 +44,18 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> session   // 새션 로그인
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-                .authorizeHttpRequests(authorizeRequests -> authorizeRequests
-//                        .requestMatchers("/users").permitAll()              // 인증없이 접속 가능
-                        .requestMatchers("/users/signup").permitAll()       // 회원가입도
-                        .requestMatchers("/auth/login").permitAll()         // 로그인도 마찬가지
-                        .requestMatchers("/auth/reissue").permitAll()       // 토큰 재 발급도
-                        .anyRequest().authenticated()                         // 나머지 경로는 모두 인증 필요
-                )
-//                .userDetailsService(userDetailsService)                     // 시큐리티 6부턴 자동으로 감지 한다던데??
-                .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint(authenticationEntryPoint))
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisServiceImpl), UsernamePasswordAuthenticationFilter.class)
-                .httpBasic(Customizer.withDefaults());                        // http 기본 인증??
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll() // Swagger 경로 허용
+                        .requestMatchers("/users/signup", "/auth/login", "/auth/reissue").permitAll()
+                        .anyRequest().authenticated())
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint))
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisServiceImpl), UsernamePasswordAuthenticationFilter.class);
         return http.build();
+    }
+
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring().requestMatchers("/v3/api-docs/**", "/swagger-ui/**");
     }
 }

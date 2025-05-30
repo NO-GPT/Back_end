@@ -34,7 +34,8 @@ public class BookMarkService {
                         .id(bookMark.getId())
                         .enabled(bookMark.isEnabled())
                         .sort(bookMark.getSort())
-                        .portfolio(bookMark.getPortfolio())
+                        .portfolioId(bookMark.getPortfolio().getId())
+                        .userId(bookMark.getUser().getId())
                         .build())
                 .toList();
     }

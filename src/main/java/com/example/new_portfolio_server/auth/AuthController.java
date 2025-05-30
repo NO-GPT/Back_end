@@ -4,6 +4,7 @@ import com.example.new_portfolio_server.auth.Dto.RequestLogin;
 import com.example.new_portfolio_server.common.response.ApiResponse;
 import com.example.new_portfolio_server.common.response.JWTAuthResponse;
 import com.example.new_portfolio_server.config.JwtTokenProvider;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,7 @@ import java.util.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/auth")
+@Tag(name = "Auth API", description = "로그인/인증 관련 API")
 public class AuthController {
 
     private final AuthService authService;

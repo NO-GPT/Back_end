@@ -1,6 +1,7 @@
 package com.example.new_portfolio_server.board;
 
 import com.example.new_portfolio_server.board.dto.BoardDto;
+import com.example.new_portfolio_server.board.dto.ResponseBoardDto;
 import com.example.new_portfolio_server.board.dto.UpdateBoardDto;
 import com.example.new_portfolio_server.board.entity.File;
 import com.example.new_portfolio_server.board.entity.Portfolio;
@@ -12,6 +13,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.typesense.api.Client;
@@ -22,6 +25,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -57,6 +61,7 @@ public class BoardService {
                     new Field().name("content").type("string").infix(true),
                     new Field().name("links").type("string").infix(true),
                     new Field().name("skills").type("string").infix(true),
+                    new Field().name("bookmarkCount").type("int32"),
                     new Field().name("createDate").type("int64"),
                     new Field().name("updateDate").type("int64")
             );
@@ -120,6 +125,7 @@ public class BoardService {
         doc.put("content", portfolio.getContent() != null ? portfolio.getContent() : "");
         doc.put("links", portfolio.getLinks() != null ? portfolio.getLinks() : "");
         doc.put("skills", portfolio.getSkills() != null ? portfolio.getSkills() : "");
+        doc.put("bookmarkCount", portfolio.getBookMarks().size());
         doc.put("createDate", portfolio.getCreateDate() != null ? portfolio.getCreateDate().toEpochSecond(ZoneOffset.UTC) : 0);
         doc.put("updateDate", portfolio.getUpdateDate() != null ? portfolio.getUpdateDate().toEpochSecond(ZoneOffset.UTC) : 0);
 
@@ -280,16 +286,38 @@ public class BoardService {
     }
 
     // 전체 조회
-    @Transactional
     public List<Portfolio> getAllPortfolio(){
         return portfolioRepository.findAll();
     }
 
+    @Transactional
+    public List<ResponseBoardDto> getTopBookmarkedPortfolios(int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        List<Portfolio> portfolios = portfolioRepository.findAllOrderByBookMarksSizeDesc(pageable);
+        return toResponseBoardDtos(portfolios);
+    }
+
     // 부분 조회
     @Transactional
-    public Portfolio getPortfolioById(Long id){
-        return portfolioRepository.findById(id)
+    public ResponseBoardDto getPortfolioById(Long id){
+        Portfolio board = portfolioRepository.findById(id)
                 .orElseThrow(() -> new DuplicateResourceException("포트폴리오가 존재하지 않습니다."));
+
+        return ResponseBoardDto.builder()
+                .id(board.getId())
+                .introduce(board.getIntroduce())
+                .part(board.getPart())
+                .content(board.getContent())
+                .links(board.getLinks())
+                .skills(board.getSkills())
+                .createDate(board.getCreateDate())
+                .updateDate(board.getUpdateDate())
+                .userId(board.getUserId().getId()) // 유저 ID 설정
+                .files(fileRepository.findByPortfolioId(id)) // 파일 목록 조회
+                .bookmarkCount(board.getBookMarks().size()) // 북마크 개수 설정
+                .bookMarks(board.getBookMarks())
+                .comments(board.getComments())
+                .build();
     }
 
     @Transactional
@@ -317,5 +345,25 @@ public class BoardService {
                 .data(file.getBytes())
                 .portfolio(portfolio)
                 .build();
+    }
+
+    private List<ResponseBoardDto> toResponseBoardDtos(List<Portfolio> portfolios) {
+        return portfolios.stream()
+                .map(board -> ResponseBoardDto.builder()
+                        .id(board.getId())
+                        .introduce(board.getIntroduce())
+                        .part(board.getPart())
+                        .content(board.getContent())
+                        .links(board.getLinks())
+                        .skills(board.getSkills())
+                        .createDate(board.getCreateDate())
+                        .updateDate(board.getUpdateDate())
+                        .userId(board.getUserId().getId())
+                        .files(fileRepository.findByPortfolioId(board.getId()))
+                        .bookMarks(board.getBookMarks())
+                        .bookmarkCount(board.getBookMarks().size())
+                        .comments(board.getComments())
+                        .build())
+                .collect(Collectors.toList());
     }
 }

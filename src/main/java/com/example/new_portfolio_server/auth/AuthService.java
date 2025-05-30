@@ -6,6 +6,7 @@ import com.example.new_portfolio_server.common.response.JWTAuthResponse;
 import com.example.new_portfolio_server.config.JwtTokenProvider;
 import com.example.new_portfolio_server.config.redis.RedisServiceImpl;
 import com.example.new_portfolio_server.user.MyUserDetailsService;
+import com.example.new_portfolio_server.user.dto.ResponseUserDto;
 import com.example.new_portfolio_server.user.entity.User;
 import com.example.new_portfolio_server.user.UserRepository;
 import io.jsonwebtoken.JwtException;
@@ -70,8 +71,10 @@ public class AuthService {
 
         // 사용자와 작성한 포트폴리오를 함께 반환
         Map<String, Object> response = new HashMap<>();
-        response.put("user", user);
+        response.put("user", ResponseUserDto.from(user));
         response.put("portfolios", user.getPortfolios());
+        response.put("bookmarks", user.getBookMarks());
+        response.put("comments", user.getComments());
 
         return ApiResponse.success(response);
     }

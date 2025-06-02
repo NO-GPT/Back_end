@@ -1,18 +1,20 @@
 package com.example.new_portfolio_server.board;
 
 import com.example.new_portfolio_server.board.dto.BoardDto;
+import com.example.new_portfolio_server.board.dto.ResponseBoardDto;
 import com.example.new_portfolio_server.board.dto.UpdateBoardDto;
 import com.example.new_portfolio_server.board.entity.File;
 import com.example.new_portfolio_server.board.entity.Portfolio;
+import com.example.new_portfolio_server.board.exception.PortfolioNotFoundException;
 import com.example.new_portfolio_server.common.exception.DuplicateResourceException;
 import com.example.new_portfolio_server.user.UserRepository;
 import com.example.new_portfolio_server.user.entity.User;
-import jakarta.transaction.Transactional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.typesense.api.Client;
 import org.typesense.api.exceptions.ObjectNotFound;
@@ -22,6 +24,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -37,6 +40,7 @@ public class BoardService {
 
     public static final String PORTFOLIO_COLLECTION = "portfolios";
     public static final String USERS_COLLECTION = "users";
+
 
     /*
     * Typesense에 포트폴리오와 사용자 컬렉션을 생성하고, 데이터베이스의 모든 데이터를 인덱싱
@@ -279,11 +283,29 @@ public class BoardService {
         return portfolioRepository.save(existing);
     }
 
-    // 전체 조회
+    // 북마크 개수를 기준으로 정렬된 커서 기반 페이지 네이션
     @Transactional
-    public List<Portfolio> getAllPortfolio(){
-        return portfolioRepository.findAll();
+    public List<ResponseBoardDto> getAllPortfolioSortedByBookMark(Long cursorBookmarkCount, Long cursorId, int limit) {
+        List<Portfolio> portfolios;
+
+        if(cursorBookmarkCount == null || cursorId == null){
+            portfolios = portfolioRepository.findInitialPortfolios(limit);
+        }
+        else {
+            portfolios = portfolioRepository.findPortfolioByCursor(cursorBookmarkCount, cursorId, limit);
+        }
+
+        if(portfolios.isEmpty()){
+            throw new PortfolioNotFoundException("포트폴리오가 더 이상 존재하지 않습니다.");
+        }
+
+        System.out.print("cursorBookmarkCount : " + cursorBookmarkCount + " cursorId : " + cursorId);
+
+        return portfolios.stream()
+                .map(ResponseBoardDto::fromEntity)
+                .collect(Collectors.toList());
     }
+
 
     // 부분 조회
     @Transactional

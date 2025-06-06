@@ -10,7 +10,7 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Dependabot 및 배포용 권한
+      contents: write
 
     steps:
       # Step 1: Checkout 코드
@@ -33,11 +33,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      # Step 4: Gradle 빌드
+      # Step 4: Gradle 빌드 (테스트 생략)
       - name: Build with Gradle Wrapper
         run: ./gradlew clean assemble --no-daemon
 
-      # Step 5: AWS CLI 설정 및 S3 업로드
+      # Step 5: JAR 파일 확인
+      - name: List JAR files
+        run: ls -l build/libs/
+
+      # Step 6: AWS CLI 설정 및 S3 업로드
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -47,16 +51,16 @@ jobs:
 
       - name: Upload JAR to S3
         run: |
-          aws s3 cp build/libs/*.jar s3://gbsw-2025project/2025-321-portfolio-files/app.jar
+          aws s3 cp build/libs/new-portfolio-server-0.0.1-SNAPSHOT.jar s3://gbsw-2025project/2025-321-portfolio-files/app.jar
 
-      # Step 6: 도커허브 로그인
+      # Step 7: 도커허브 로그인
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # Step 7: 도커 이미지 빌드 및 푸시
+      # Step 8: 도커 이미지 빌드 및 푸시
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
@@ -65,7 +69,7 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/2025-321-portfolio-app:latest
 
-      # Step 8: EC2에 배포
+      # Step 9: EC2에 배포
       - name: Deploy to EC2
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
@@ -73,10 +77,14 @@ jobs:
         run: |
           echo "$EC2_SSH_KEY" > key.pem
           chmod 400 key.pem
-          scp -i key.pem -o StrictHostKeyChecking=no /home/ec2-user/new_portfolio/deploy.sh ec2-user@$EC2_HOST:/home/ec2-user/new_portfolio/deploy.sh
-          ssh -i key.pem -o StrictHostKeyChecking=no ec2-user@$EC2_HOST 'bash /home/ec2-user/new_portfolio/deploy.sh'
+          ssh -i key.pem -o StrictHostKeyChecking=no ec2-user@$EC2_HOST << 'EOF'
+            cd /home/ec2-user/new_portfolio
+            docker compose down
+            docker pull silofn/2025-321-portfolio-app:latest
+            docker compose up -d
+            docker logs new_portfolio_app
+          EOF
 
-  # 의존성 제출 (Dependabot Alerts 지원)
   dependency-submission:
     runs-on: ubuntu-latest
     permissions:
@@ -90,6 +98,5 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      # 의존성 그래프 생성 및 제출
       - name: Generate and submit dependency graph
         uses: gradle/actions/dependency-submission@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0

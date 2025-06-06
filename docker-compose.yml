@@ -1,0 +1,72 @@
+services:
+  redis:
+    image: redis:7.0
+    container_name: new_portfolio_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - app-network
+
+  typesense:
+    image: typesense/typesense:0.25.0
+    container_name: new_portfolio_typesense
+    ports:
+      - "8108:8108"
+    environment:
+      - TYPESENSE_API_KEY=xyz
+      - TYPESENSE_DATA_DIR=/data
+      - TYPESENSE_ENABLE_CORS=true
+    volumes:
+      - typesense-data:/data
+    networks:
+      - app-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: new_portfolio_app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redis
+      - typesense
+    environment:
+      - SPRING_APPLICATION_NAME=New_Portfolio_Server
+      - SERVER_PORT=8080
+      - SPRING_DATASOURCE_URL=jdbc:mysql://gbsw-2025project-rds.cbsyuakiavnn.ap-northeast-2.rds.amazonaws.com:3306/2025-312-team1?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
+      - SPRING_DATASOURCE_USERNAME=admin
+      - SPRING_DATASOURCE_PASSWORD=Gbswqhdks!!
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=com.mysql.cj.jdbc.Driver
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_JPA_SHOW_SQL=true
+      - SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT=org.hibernate.dialect.MySQLDialect
+      - SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL=true
+      - SPRING_DATASOURCE_HIKARI_CONNECTION_TIMEOUT=30000
+      - SPRING_DATASOURCE_HIKARI_VALIDATION_TIMEOUT=5000
+      - JWT_SECRET=jwt
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
+      - SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE=5MB
+      - SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE=10MB
+      - TYPESENSE_API_KEY=xyz
+      - TYPESENSE_HOST=typesense
+      - TYPESENSE_PORT=8108
+      - TYPESENSE_PROTOCOL=http
+      - SPRINGDOC_SWAGGER_UI_URL=/v3/api-docs
+      - SPRINGDOC_API_DOCS_PATH=/v3/api-docs
+      - SPRINGDOC_SWAGGER_UI_PATH=/swagger-ui
+      - SPRINGDOC_SWAGGER_UI_OPERATIONS_SORTER=method
+      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY=DEBUG
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+  typesense-data:

@@ -1,0 +1,64 @@
+package com.example.new_portfolio_server.comments;
+
+import com.example.new_portfolio_server.comments.dto.CommentEditRequestDto;
+import com.example.new_portfolio_server.comments.dto.CommentRequestDto;
+import com.example.new_portfolio_server.comments.dto.CommentResponseDto;
+import com.example.new_portfolio_server.comments.entity.Comments;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.util.List;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/comment")
+@Tag(name = "Comment API", description = "댓글 관련 API")
+public class CommentController {
+
+    private final CommentService commentService;
+
+    // 댓글 게시
+    @PostMapping
+    public ResponseEntity<CommentResponseDto> createComment(@RequestBody @Valid CommentRequestDto commentRequestDto){
+        return ResponseEntity.ok(commentService.createComment(commentRequestDto));
+    }
+
+    // 댓글 전체 조회
+    @GetMapping
+    public ResponseEntity<List<Comments>> getCommentAll(){
+        return ResponseEntity.ok(commentService.getCommentAll());
+    }
+
+    // 댓글 조회
+    @GetMapping("/{id}")
+    public ResponseEntity<CommentResponseDto> getComment(@PathVariable Long id){
+        CommentResponseDto commentResponseDto = commentService.getComment(id);
+        return ResponseEntity.ok(commentResponseDto);
+    }
+
+    // 포트폴리오에 달린 댓글 조회
+    @GetMapping("/portfolio/{portfolioId}")
+    public ResponseEntity<List<CommentResponseDto>> getCommentByPortfolioId(@PathVariable Long portfolioId){
+        List<CommentResponseDto> commentResponseDtos = commentService.getCommentByPortfolio(portfolioId);
+        return ResponseEntity.ok(commentResponseDtos);
+    }
+
+    // 댓글 수정
+    @PatchMapping("/{id}")
+    public ResponseEntity<CommentResponseDto> updateComment(
+            @PathVariable Long id,
+            @RequestBody @Valid CommentEditRequestDto commentEditRequestDto
+            ){
+        CommentResponseDto commentResponseDto = commentService.updateComment(id, commentEditRequestDto);
+        return ResponseEntity.ok(commentResponseDto);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteComment(@PathVariable Long id){
+        commentService.deleteComment(id);
+        return ResponseEntity.ok("댓글 삭제 성공");
+    }
+}

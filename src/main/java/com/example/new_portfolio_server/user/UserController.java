@@ -3,6 +3,11 @@ package com.example.new_portfolio_server.user;
 import com.example.new_portfolio_server.common.response.ApiResponse;
 import com.example.new_portfolio_server.user.dto.CreateUserDto;
 import com.example.new_portfolio_server.user.entity.User;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +32,14 @@ public class UserController {
                         .success(users));
     }
 
-    // 회원가입 엔드포인트
+    @Operation(summary = "회원가입", description = "사용자 추가")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "회원가입 성공",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiResponse.class))),
+    })
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<Long>> createUser(@RequestBody @Valid CreateUserDto dto) {
         Long userId = userService.createUser(dto);

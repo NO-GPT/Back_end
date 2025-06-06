@@ -35,6 +35,20 @@ public class BoardController {
     private static final Logger logger = LoggerFactory.getLogger(BoardController.class);
 
     // 검색
+    @Operation(summary = "포트폴리오 키워드로 검색", description = "키워드가 들어간 포폴들을 조회합니다.",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "포트폴리오 조회 성공",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "포트폴리오가 존재하지 않음",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiResponse.class)))
+    })
     @GetMapping("/search")
     public ResponseEntity<ApiResponse<List<Map<String, Object>>>> searchPortfoliosAndUsers(
             @RequestParam("keyword") String keyword,

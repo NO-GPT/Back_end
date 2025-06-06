@@ -24,9 +24,7 @@ services:
       - app-network
 
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: silofn/2025-321-portfolio-app:latest
     container_name: new_portfolio_app
     ports:
       - "8080:8080"
@@ -36,9 +34,9 @@ services:
     environment:
       - SPRING_APPLICATION_NAME=New_Portfolio_Server
       - SERVER_PORT=8080
-      - SPRING_DATASOURCE_URL=jdbc:mysql://gbsw-2025project-rds.cbsyuakiavnn.ap-northeast-2.rds.amazonaws.com:3306/2025-312-team1?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
+      - SPRING_DATASOURCE_URL=jdbc:mysql://gbsw-2025project-rds.cbsyuakiavnn.ap-northeast-2.rds.amazonaws.com:3306/2025-321-no_gpt?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
       - SPRING_DATASOURCE_USERNAME=admin
-      - SPRING_DATASOURCE_PASSWORD=Gbswqhdks!!
+      - SPRING_DATASOURCE_PASSWORD=Gbswqhdks##
       - SPRING_DATASOURCE_DRIVER_CLASS_NAME=com.mysql.cj.jdbc.Driver
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
       - SPRING_JPA_SHOW_SQL=true

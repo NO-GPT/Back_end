@@ -28,7 +28,7 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/portfolio")
-@Tag(name = "Portfolio API", description = "포트폴리오 관련 API")
+@Tag(name = "Portfolio API", description = "포트폴리오 관련 APIㅇ")
 public class BoardController {
     private final PortfolioRepository portfolioRepository;
     private final BoardService boardService;

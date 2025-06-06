@@ -27,6 +27,7 @@ public class UserController {
                         .success(users));
     }
 
+    // 회원가입 엔드포인트
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<Long>> createUser(@RequestBody @Valid CreateUserDto dto) {
         Long userId = userService.createUser(dto);

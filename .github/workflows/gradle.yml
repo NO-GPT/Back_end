@@ -35,7 +35,7 @@ jobs:
 
       # Step 4: Gradle 빌드
       - name: Build with Gradle Wrapper
-        run: ./gradlew clean build --no-daemon
+        run: ./gradlew clean assemble --no-daemon
 
       # Step 5: AWS CLI 설정 및 S3 업로드
       - name: Configure AWS credentials

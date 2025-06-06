@@ -60,6 +60,15 @@ dependencyManagement {
     }
 }
 
+jar {
+    enabled = false // 기본 jar 태스크 비활성화
+}
+
+bootJar {
+    enabled = true
+    archiveFileName = 'new-portfolio-server.jar' // 통일된 파일 이름 지정
+}
+
 tasks.named('test') {
     useJUnitPlatform()
 }

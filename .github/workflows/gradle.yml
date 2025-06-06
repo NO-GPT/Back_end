@@ -77,6 +77,7 @@ jobs:
         run: |
           echo "$EC2_SSH_KEY" > key.pem
           chmod 400 key.pem
+          scp -i key.pem -o StrictHostKeyChecking=no docker-compose.yml ec2-user@$EC2_HOST:/home/ec2-user/new_portfolio/docker-compose.yml
           ssh -i key.pem -o StrictHostKeyChecking=no ec2-user@$EC2_HOST << 'EOF'
             cd /home/ec2-user/new_portfolio
             docker compose down

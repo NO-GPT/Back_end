@@ -1,20 +1,4 @@
 services:
-  # MySQL 서비스
-  mysql:
-    image: mysql:8.0
-    container_name: new_portfolio_mysql
-    environment:
-      - MYSQL_ROOT_PASSWORD=
-      - MYSQL_DATABASE=no_gpt
-      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
-    ports:
-      - "3306:3306"
-    volumes:
-      - mysql-data:/var/lib/mysql
-    networks:
-      - app-network
-
-  # Redis 서비스
   redis:
     image: redis:7.0
     container_name: new_portfolio_redis
@@ -25,7 +9,6 @@ services:
     networks:
       - app-network
 
-  # Typesense 서비스
   typesense:
     image: typesense/typesense:0.25.0
     container_name: new_portfolio_typesense
@@ -40,7 +23,6 @@ services:
     networks:
       - app-network
 
-  # Spring Boot 애플리케이션 서비스
   app:
     build:
       context: .
@@ -49,20 +31,21 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - mysql
       - redis
       - typesense
     environment:
       - SPRING_APPLICATION_NAME=New_Portfolio_Server
       - SERVER_PORT=8080
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/no_gpt?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=
+      - SPRING_DATASOURCE_URL=jdbc:mysql://gbsw-2025project-rds.cbsyuakiavnn.ap-northeast-2.rds.amazonaws.com:3306/2025-312-team1?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
+      - SPRING_DATASOURCE_USERNAME=admin
+      - SPRING_DATASOURCE_PASSWORD=Gbswqhdks!!
       - SPRING_DATASOURCE_DRIVER_CLASS_NAME=com.mysql.cj.jdbc.Driver
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
       - SPRING_JPA_SHOW_SQL=true
-      - SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT=org.hibernate.dialect.MySQL8Dialect
+      - SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT=org.hibernate.dialect.MySQLDialect
       - SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL=true
+      - SPRING_DATASOURCE_HIKARI_CONNECTION_TIMEOUT=30000
+      - SPRING_DATASOURCE_HIKARI_VALIDATION_TIMEOUT=5000
       - JWT_SECRET=jwt
       - SPRING_DATA_REDIS_HOST=redis
       - SPRING_DATA_REDIS_PORT=6379
@@ -85,6 +68,5 @@ networks:
     driver: bridge
 
 volumes:
-  mysql-data:
   redis-data:
   typesense-data:

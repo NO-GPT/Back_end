@@ -26,6 +26,7 @@ services:
   app:
     image: silofn/2025-321-portfolio-app:latest
     container_name: new_portfolio_app
+    platform: linux/arm64  # EC2 아키텍처에 맞게 명시
     ports:
       - "8080:8080"
     depends_on:

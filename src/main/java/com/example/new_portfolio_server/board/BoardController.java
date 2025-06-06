@@ -100,6 +100,7 @@ public class BoardController {
     }
 
     // 전체 게시물 조회
+
     @GetMapping("/list")
     public ResponseEntity<ApiResponse<List<Portfolio>>> getAllPortfolio() {
         List<Portfolio> portfolios = boardService.getAllPortfolio();
@@ -156,6 +157,20 @@ public class BoardController {
     }
 
     // id값으로 수정
+    @Operation(summary = "포트폴리오 조회 수정", description = "수정합니다",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "포트폴리오 수정 성공",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "포트폴리오가 존재하지 않음",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiResponse.class)))
+    })
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<Portfolio>> updatePortfolio(
             @PathVariable Long id,
@@ -173,6 +188,20 @@ public class BoardController {
     }
 
     // id값으로 삭제
+    @Operation(summary = "포트폴리오 삭제", description = "id값으로 삭제합니다.",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "포트폴리오 삭제 성공",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "포트폴리오가 존재하지 않음",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiResponse.class)))
+    })
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<String>> deletePortfolio(@PathVariable Long id) {
         if (!portfolioRepository.existsById(id)) {

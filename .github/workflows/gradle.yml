@@ -51,7 +51,13 @@ jobs:
 
       - name: Upload JAR to S3
         run: |
-          aws s3 cp build/libs/new-portfolio-server-0.0.1-SNAPSHOT.jar s3://gbsw-2025project/2025-321-portfolio-files/app.jar
+          JAR_FILE=$(ls build/libs/*.jar)
+          if [ -f "$JAR_FILE" ]; then
+            aws s3 cp "$JAR_FILE" s3://gbsw-2025project/2025-321-portfolio-files/app.jar
+          else
+            echo "No JAR file found in build/libs/"
+            exit 1
+          fi
 
       # Step 7: 도커허브 로그인
       - name: Log in to Docker Hub

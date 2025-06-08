@@ -34,7 +34,7 @@ public class BoardController {
     private final BoardService boardService;
     private static final Logger logger = LoggerFactory.getLogger(BoardController.class);
 
-    // 검색
+    // 검색 ㅇㅇ
     @Operation(summary = "포트폴리오 키워드로 검색", description = "키워드가 들어간 포폴들을 조회합니다.",
             security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses({

@@ -115,6 +115,15 @@ public class BoardController {
 
     // 전체 게시물 조회
 
+    @Operation(summary = "포트폴리오 list", description = " 포폴list 조회합니다.",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "포트폴리오 조회 성공",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiResponse.class))),
+    })
     @GetMapping("/list")
     public ResponseEntity<ApiResponse<List<Portfolio>>> getAllPortfolio() {
         List<Portfolio> portfolios = boardService.getAllPortfolio();

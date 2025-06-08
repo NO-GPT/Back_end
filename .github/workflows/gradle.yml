@@ -96,10 +96,10 @@ jobs:
           chmod 600 key.pem
           ssh -i key.pem -o StrictHostKeyChecking=no ec2-user@$EC2_HOST << 'EOF'
             cd /home/ec2-user/new_portfolio
-            docker compose down
+            docker-compose down
             docker rmi silofn/2025-321-portfolio-app:latest || true
             docker pull silofn/2025-321-portfolio-app:latest
-            docker compose up -d
+            docker-compose up -d
             docker logs new_portfolio_app
           EOF
 

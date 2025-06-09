@@ -86,8 +86,7 @@ public class BoardController {
     }
 
     // 게시
-    @Operation(summary = "포트폴리오 생성", description = "포폴을 생성합니다",
-            security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "포트폴리오 생성", description = "포폴을 생성합니다")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "200",

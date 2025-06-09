@@ -43,7 +43,7 @@ public class Portfolio {
     @Column(name = "content", length = 400, nullable = false)
     private String content; // 배운 점 / 문제 해결
 
-    @Column(name = "links", length = 200)
+    @Column(name = "links", length = 200, nullable = true)
     private String links; // 프로젝트 참고 링크(github, notion 등)
 
     @Column(name = "skills", length = 300, nullable = false)

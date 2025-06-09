@@ -1,9 +1,7 @@
 package com.example.new_portfolio_server.user.dto;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -25,6 +23,19 @@ public class UpdateUserDto {
     @NotNull(message = "이름은 필수 입력 값입니다.")
     @Pattern(regexp = "^[ㄱ-ㅎ가-힣a-z0-9-_]{2,10}$", message = "이름은 특수문자를 제외한 2~10자리여야 합니다.")
     private String fullName;
+
+    @NotNull(message = "전화번호는 필수 입력 값입니다.")
+    @Pattern(regexp = "^\\d{2,3}-\\d{3,4}-\\d{4}$", message = "전화번호 형식이 올바르지 않습니다. 예: 010-1234-5678")
+    @Schema(description = "전화번호", example = "010-1234-5678")
+    private String tel;
+
+    @NotNull(message = "나이는 필수 입력 값입니다.")
+    @Min(value = 0, message = "나이는 0 이상이어야 합니다.")
+    @Max(value = 150, message = "나이는 150 이하이어야 합니다.")
+    @Schema(description = "나이", example = "20")
+    @Min(0)
+    @Max(150)
+    private int age;
 
     @NotNull(message = "분야는 필수 입력 값입니다.")
     private String field;

@@ -35,6 +35,20 @@ public class CreateUserDto {
     @Schema(description = "실명", example = "김승환")
     private String fullName;
 
+    @NotNull(message = "전화번호는 필수 입력 값입니다.")
+    @NotBlank(message = "전화번호는 필수 입력 값입니다.")
+    @Pattern(regexp = "^\\d{2,3}-\\d{3,4}-\\d{4}$", message = "전화번호 형식이 올바르지 않습니다. 예: 010-1234-5678")
+    @Schema(description = "전화번호", example = "010-1234-5678")
+    private String tel;
+
+    @NotNull(message = "나이는 필수 입력 값입니다.")
+    @Min(value = 0, message = "나이는 0 이상이어야 합니다.")
+    @Max(value = 150, message = "나이는 150 이하이어야 합니다.")
+    @Schema(description = "나이", example = "20")
+    @Min(0)
+    @Max(150)
+    private int age;
+
     @NotNull(message = "분야는 필수 입력 값입니다.")
     @NotBlank(message = "분야는 필수 입력 값입니다.")
     @Schema(description = "분야", example = "백엔드/프론트/인프라/디자이너 ...")
@@ -64,6 +78,8 @@ public class CreateUserDto {
                 .password(passwordEncoder.encode(this.password))
                 .email(this.email)
                 .fullName(this.fullName)
+                .tel(this.tel)
+                .age(this.age)
                 .field(this.field)
                 .group(this.group)
                 .stack(this.stack)

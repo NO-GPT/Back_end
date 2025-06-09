@@ -41,6 +41,16 @@ public class User {
     @Column(name = "full_name", nullable = false, unique = false)       // 실명
     private String fullName;
 
+    @Comment("유저 전번")
+    @Column(name = "tel", nullable = false, unique = false)       // 실명
+    private String tel;
+
+    @Comment("유저 나이")
+    @Column(name = "age", nullable = false, unique = false)       // 실명
+    private int age;
+
+    
+
     @Comment("유저의 직업 분야")
     @Column(name = "field", nullable = false, unique = false)           // 분야 (예 : 백엔드 / 프론트 / devops
     private String field;

@@ -2,10 +2,7 @@ package com.example.new_portfolio_server.user.dto;
 
 import com.example.new_portfolio_server.user.entity.User;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.*;
 import lombok.Builder;
 import lombok.Data;
 
@@ -28,6 +25,11 @@ public class ResponseUserDto {
     @Schema(description = "실명", example = "김승환")
     private String fullName;
 
+    @Schema(description = "전화번호", example = "010-1234-5678")
+    private String tel;
+
+    @Schema(description = "나이", example = "20")
+    private int age;
     @Schema(description = "분야", example = "백엔드")
     private String field;
 
@@ -50,6 +52,8 @@ public class ResponseUserDto {
                 .password(user.getPassword())
                 .email(user.getEmail())
                 .fullName(user.getFullName())
+                .tel(user.getTel())
+                .age(user.getAge())
                 .field(user.getField())
                 .group(user.getGroup())
                 .stack(user.getStack())

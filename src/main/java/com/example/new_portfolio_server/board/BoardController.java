@@ -100,7 +100,7 @@ public class BoardController {
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = ApiResponse.class)))
     })
-    @PostMapping
+    @PostMapping("/create")
     public ApiResponse<?> createPortfolio(
             @ModelAttribute @Valid BoardDto boardDto,
             List<MultipartFile> files) throws IOException {

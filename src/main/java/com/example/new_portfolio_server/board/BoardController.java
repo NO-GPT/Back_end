@@ -2,6 +2,8 @@ package com.example.new_portfolio_server.board;
 
 import com.example.new_portfolio_server.board.dto.BoardDto;
 import com.example.new_portfolio_server.board.dto.ResponseBoardDto;
+import com.example.new_portfolio_server.board.dto.CursorResponse;
+import com.example.new_portfolio_server.board.dto.ResponseBoardDto;
 import com.example.new_portfolio_server.board.dto.UpdateBoardDto;
 import com.example.new_portfolio_server.board.entity.Portfolio;
 import com.example.new_portfolio_server.common.response.ApiResponse;
@@ -16,6 +18,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -99,14 +103,16 @@ public class BoardController {
                 .success(boardService.createPortfolio(boardDto));
     }
 
-    // 전체 게시물 조회
+    // 커서 기반 페이지네이션
     @GetMapping("/list")
-    public ResponseEntity<ApiResponse<List<Portfolio>>> getAllPortfolio() {
-        List<Portfolio> portfolios = boardService.getAllPortfolio();
-        return ResponseEntity
-                .ok(ApiResponse
-                        .success(portfolios));
+    public List<ResponseBoardDto> getPortfolioSortedByBookmark(
+            @RequestParam(required = false) Long cursorBookmarkCount,
+            @RequestParam(required = false) Long cursorId,
+            @RequestParam(defaultValue = "20") int limit
+    ){
+        return boardService.getAllPortfolioSortedByBookMark(cursorBookmarkCount, cursorId, limit);
     }
+
 
     // id값으로 게시글 조회
     @Operation(summary = "상세 포트폴리오 조회", description = "상세 조회합니다.",
@@ -186,4 +192,7 @@ public class BoardController {
                 .ok(ApiResponse
                         .success("포트폴리오가 성공적으로 삭제되었습니다.", null));
     }
+
+
+
 }

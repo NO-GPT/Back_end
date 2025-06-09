@@ -52,10 +52,25 @@ public class ResponseBoardDto {
     private List<BookMark> bookMarks; // 북마크 목록
 
     @Schema(description = "북마크 갯수", example = "4")
-    private int bookmarkCount;
 
     @Schema(description = "해당 게시글에 달린 댓글 리스트")
     private List<Comments> comments;
 
 
+    private Long bookmarkCount; // 북마크 개수
+
+    public static ResponseBoardDto fromEntity(Portfolio portfolio) {
+        return new ResponseBoardDto(
+                portfolio.getId(),
+                portfolio.getIntroduce(),
+                portfolio.getPart(),
+                portfolio.getContent(),
+                portfolio.getLinks(),
+                portfolio.getSkills(),
+                portfolio.getCreateDate(),
+                portfolio.getUpdateDate(),
+                portfolio.getUserId().getId(), // 작성자 ID
+                (long) portfolio.getBookMarks().size() // 해당 포트폴리오에 연결된 북마크 수
+        );
+    }
 }

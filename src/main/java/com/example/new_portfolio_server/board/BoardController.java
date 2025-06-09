@@ -101,19 +101,14 @@ public class BoardController {
     })
     @PostMapping("/create")
     public ApiResponse<?> createPortfolio(
-            @ModelAttribute @Valid BoardDto boardDto,
-            List<MultipartFile> files) throws IOException {
-        boardDto.setFiles(files);
+            @ModelAttribute @Valid BoardDto boardDto) throws IOException {
         if (boardDto.getFiles() == null || boardDto.getFiles().isEmpty()) {
-            return ApiResponse
-                    .error("파일이 전달되지 않았습니다.");
+            return ApiResponse.error("파일이 전달되지 않았습니다.");
         }
-        return ApiResponse
-                .success(boardService.createPortfolio(boardDto));
+        return ApiResponse.success(boardService.createPortfolio(boardDto));
     }
 
     // 전체 게시물 조회
-
     @Operation(summary = "포트폴리오 list", description = " 포폴list 조회합니다.",
             security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses({

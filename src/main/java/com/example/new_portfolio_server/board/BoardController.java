@@ -141,7 +141,7 @@ public class BoardController {
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = ApiResponse.class)))
     })
-    @GetMapping("/{id}")
+    @GetMapping("detail/{id}")
     public ResponseEntity<ApiResponse<ResponseBoardDto>> getPortfolioById(
             @Parameter(description = "포폴 아이디", example = "1") @PathVariable Long id) {
         if (!portfolioRepository.existsById(id)) {
@@ -188,7 +188,7 @@ public class BoardController {
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = ApiResponse.class)))
     })
-    @PatchMapping("/{id}")
+    @PatchMapping("update/{id}")
     public ResponseEntity<ApiResponse<Portfolio>> updatePortfolio(
             @PathVariable Long id,
             @ModelAttribute @Valid UpdateBoardDto boardDto) {

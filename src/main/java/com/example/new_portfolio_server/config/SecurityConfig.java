@@ -24,7 +24,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 //@EnableWebFluxSecurity    // WebFlux 기반 시큐리티 활성화
 @RequiredArgsConstructor
 public class SecurityConfig {
-//    private final UserDetailsService userDetailsService;                  // 스프링 시쿠리티6 부턴 자동으로 주입 ??
+    //    private final UserDetailsService userDetailsService;                  // 스프링 시쿠리티6 부턴 자동으로 주입 ??
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtAuthenticationEntryPoint authenticationEntryPoint;
     private final RedisServiceImpl redisServiceImpl;
@@ -47,7 +47,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll() // Swagger 경로 허용
-                        .requestMatchers("/users/signup", "/auth/login", "/auth/reissue").permitAll()
+                        .requestMatchers("/users/signup", "/auth/login", "/auth/reissue", "/portfolio/list", "/portfolio/top-bookmarked", "/portfolio/detail/").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint))
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisServiceImpl), UsernamePasswordAuthenticationFilter.class);

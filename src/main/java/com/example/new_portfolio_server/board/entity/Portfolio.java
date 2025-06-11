@@ -3,7 +3,6 @@ package com.example.new_portfolio_server.board.entity;
 import com.example.new_portfolio_server.comments.entity.Comments;
 import com.example.new_portfolio_server.user.entity.User;
 import com.example.new_portfolio_server.bookmark.entity.BookMark;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;

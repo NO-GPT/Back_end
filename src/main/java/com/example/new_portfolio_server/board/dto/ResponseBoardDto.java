@@ -9,7 +9,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
-import java.awt.print.Book;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -48,16 +47,17 @@ public class ResponseBoardDto {
     @Schema(description = "작성자 아이디", example = "1")
     private Long userId; // 작성자 ID
 
+    private String username; // 유저 닉네임
+
     @Schema(description = "해당 게시글에 달린 북마크 리스트")
     private List<BookMark> bookMarks; // 북마크 목록
 
     @Schema(description = "북마크 갯수", example = "4")
+    private Long bookmarkCount; // 북마크 개수
 
     @Schema(description = "해당 게시글에 달린 댓글 리스트")
     private List<Comments> comments;
 
-
-    private Long bookmarkCount; // 북마크 개수
 
     public static ResponseBoardDto fromEntity(Portfolio portfolio) {
         return new ResponseBoardDto(
@@ -67,10 +67,14 @@ public class ResponseBoardDto {
                 portfolio.getContent(),
                 portfolio.getLinks(),
                 portfolio.getSkills(),
+                portfolio.getFiles(),                      // File 리스트
                 portfolio.getCreateDate(),
                 portfolio.getUpdateDate(),
-                portfolio.getUserId().getId(), // 작성자 ID
-                (long) portfolio.getBookMarks().size() // 해당 포트폴리오에 연결된 북마크 수
+                portfolio.getUserId().getId(),
+                portfolio.getUserId().getUsername(),
+                portfolio.getBookMarks(),                 // BookMark 리스트
+                (long) portfolio.getBookMarks().size(),   // 북마크 수
+                portfolio.getComments()                   // 댓글 리스트
         );
     }
 }

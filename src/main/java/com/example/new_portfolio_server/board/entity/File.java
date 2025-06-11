@@ -24,9 +24,8 @@ public class File {
     @Column(name = "file_size")
     private Long size; // 파일 사이즈
 
-    @Lob
-    @Column(columnDefinition = "LONGBLOB", name = "img_data")
-    private byte[] data; // 파일 정보(byte 형식)
+    @Column(name = "file_url")
+    private String fileUrl; // S3 URL 저장
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnore

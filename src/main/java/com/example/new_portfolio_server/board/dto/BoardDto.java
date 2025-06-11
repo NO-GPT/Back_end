@@ -1,8 +1,7 @@
 package com.example.new_portfolio_server.board.dto;
 
-import com.example.new_portfolio_server.board.entity.File;
 import com.example.new_portfolio_server.board.entity.Portfolio;
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -12,7 +11,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -42,6 +40,7 @@ public class BoardDto {
     private String skills;
 
     @Schema(description = "첨부할 프로젝트 사진")
+    @JsonIgnore
     private List<MultipartFile> files;
 
     @NotNull(message = "작성자 ID는 필수입니다.")

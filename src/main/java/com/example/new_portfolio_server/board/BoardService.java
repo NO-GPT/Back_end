@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 
@@ -37,12 +38,14 @@ public class BoardService {
     private final UserRepository userRepository;
     private final PortfolioRepository portfolioRepository;
     private final FileRepository fileRepository;
+
+    private final ImageService imageService;
+
     @Getter
     private final Client typesenseClient;
 
     public static final String PORTFOLIO_COLLECTION = "portfolios";
     public static final String USERS_COLLECTION = "users";
-
 
     /*
     * Typesense에 포트폴리오와 사용자 컬렉션을 생성하고, 데이터베이스의 모든 데이터를 인덱싱
@@ -252,6 +255,7 @@ public class BoardService {
         return results;
     }
 
+    // 포트폴리오 업로드
     @Transactional
     public Portfolio createPortfolio(BoardDto boardDto) throws IOException {
         // 유저 조회
@@ -265,27 +269,41 @@ public class BoardService {
         // 포트폴리오 저장
         Portfolio saved = portfolioRepository.save(portfolio);
 
+        System.out.println(boardDto.getFiles().size());
         // 파일 저장
-        if (boardDto.getFiles() != null && !boardDto.getFiles().isEmpty()) {
-            for (MultipartFile file : boardDto.getFiles()) {
-                fileRepository.save(toFileEntity(file, saved));
+        List<MultipartFile> files = boardDto.getFiles();
+        if(files != null && !files.isEmpty()){
+            List<String> fileUrls = imageService.uploadFile(files);
+
+            for(int i=0;i<files.size();i++){
+                MultipartFile multipartFile = files.get(i);
+                String fileUrl = fileUrls.get(i);
+
+                File file = File.builder()
+                        .fileName(multipartFile.getOriginalFilename())
+                        .contentType(multipartFile.getContentType())
+                        .size(multipartFile.getSize())
+                        .fileUrl(fileUrl)
+                        .portfolio(saved)
+                        .build();
+
+                fileRepository.save(file);
             }
         }
-
         return saved;
     }
 
     // 수정
-    @Transactional
-    public Portfolio updatePortfolio(Long id, UpdateBoardDto boardDto) {
-        Portfolio existing = portfolioRepository.findById(id)
-                .orElseThrow(() -> new DuplicateResourceException("포트폴리오가 존재하지 않습니다."));
-
-        // DTO를 사용해 엔티티 업데이트
-        boardDto.applyTo(existing);
-
-        return portfolioRepository.save(existing);
-    }
+//    @Transactional
+//    public Portfolio updatePortfolio(Long id, UpdateBoardDto boardDto) {
+//        Portfolio existing = portfolioRepository.findById(id)
+//                .orElseThrow(() -> new DuplicateResourceException("포트폴리오가 존재하지 않습니다."));
+//
+//        // DTO를 사용해 엔티티 업데이트
+//        boardDto.applyTo(existing);
+//
+//        return portfolioRepository.save(existing);
+//    }
 
     // 북마크 개수를 기준으로 정렬된 커서 기반 페이지 네이션
     @Transactional
@@ -333,12 +351,40 @@ public class BoardService {
                 .createDate(board.getCreateDate())
                 .updateDate(board.getUpdateDate())
                 .userId(board.getUserId().getId()) // 유저 ID 설정
+                .username(board.getUserId().getUsername())
                 .files(fileRepository.findByPortfolioId(id)) // 파일 목록 조회
-                .bookmarkCount(board.getBookMarks().size()) // 북마크 개수 설정
+                .bookmarkCount((long)board.getBookMarks().size()) // 북마크 개수 설정
                 .bookMarks(board.getBookMarks())
                 .comments(board.getComments())
                 .build();
     }
+
+    @Transactional
+    public List<ResponseBoardDto> getPortfolioByUsername(String username){
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("유저가 존재하지 않습니다."));
+
+        List<Portfolio> portfolios = portfolioRepository.findByUserId_Username(username);
+
+        return portfolios.stream().map(board -> ResponseBoardDto.builder()
+                .id(board.getId())
+                .introduce(board.getIntroduce())
+                .part(board.getPart())
+                .content(board.getContent())
+                .links(board.getLinks())
+                .skills(board.getSkills())
+                .createDate(board.getCreateDate())
+                .updateDate(board.getUpdateDate())
+                .userId(board.getUserId().getId())
+                .username(board.getUserId().getUsername())
+                .files(fileRepository.findByPortfolioId(board.getId()))
+                .bookmarkCount((long)board.getBookMarks().size())
+                .bookMarks(board.getBookMarks())
+                .comments(board.getComments())
+                .build()
+        ).toList();
+    }
+
 
     @Transactional
     public Optional<File> getFile(Long id) {
@@ -348,23 +394,18 @@ public class BoardService {
     // 삭제
     @Transactional
     public void delete(Long id){
+        Portfolio portfolio = portfolioRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("포트폴리오가 존재하지 않습니다."));
+
+        // 연관된 파일 이름 가져오기
+        List<String> fileNames = portfolio.getFiles().stream()
+                .map(File::getFileUrl)
+                .toList();
+
+        // S3에서 파일 삭제
+        fileNames.forEach(imageService::deleteFile);
+
         portfolioRepository.deleteById(id);
-    }
-
-    private File toFileEntity(MultipartFile file, Portfolio portfolio) throws IOException{
-        String uuid = UUID.randomUUID().toString();
-        String name = uuid + "_" + Paths.get(Objects.requireNonNull(file.getOriginalFilename()))
-                .getFileName()
-                .toString()
-                .replaceAll("[^a-zA-Z0-9.\\-_]", "_"); // 경로 제거
-
-        return File.builder()
-                .fileName(name)
-                .contentType(file.getContentType())
-                .size(file.getSize())
-                .data(file.getBytes())
-                .portfolio(portfolio)
-                .build();
     }
 
     private List<ResponseBoardDto> toResponseBoardDtos(List<Portfolio> portfolios) {
@@ -381,7 +422,7 @@ public class BoardService {
                         .userId(board.getUserId().getId())
                         .files(fileRepository.findByPortfolioId(board.getId()))
                         .bookMarks(board.getBookMarks())
-                        .bookmarkCount(board.getBookMarks().size())
+                        .bookmarkCount((long)board.getBookMarks().size())
                         .comments(board.getComments())
                         .build())
                 .collect(Collectors.toList());

@@ -39,4 +39,6 @@ public interface PortfolioRepository extends JpaRepository<Portfolio, Long>{
             @Param("cursorId") long cursorId,
             @Param("limit") int limit
     );
+
+    List<Portfolio> findByUserId_Username(String username);
 }

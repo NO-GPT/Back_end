@@ -303,21 +303,7 @@ public class BoardService {
         Portfolio board = portfolioRepository.findById(id)
                 .orElseThrow(() -> new DuplicateResourceException("포트폴리오가 존재하지 않습니다."));
 
-        return ResponseBoardDto.builder()
-                .id(board.getId())
-                .introduce(board.getIntroduce())
-                .part(board.getPart())
-                .content(board.getContent())
-                .links(board.getLinks())
-                .skills(board.getSkills())
-                .createDate(board.getCreateDate())
-                .updateDate(board.getUpdateDate())
-                .userId(board.getUserId().getId()) // 유저 ID 설정
-                .files(fileRepository.findByPortfolioId(id)) // 파일 목록 조회
-                .bookmarkCount(board.getBookMarks().size()) // 북마크 개수 설정
-                .bookMarks(board.getBookMarks())
-                .comments(board.getComments())
-                .build();
+        return ResponseBoardDto.from(board, board.getBookMarks(), board.getBookMarks().size());
     }
 
     @Transactional

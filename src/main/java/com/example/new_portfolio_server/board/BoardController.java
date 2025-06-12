@@ -141,7 +141,7 @@ public class BoardController {
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = ApiResponse.class)))
     })
-    @GetMapping("detail/{id}")
+    @GetMapping("/detail/{id}")
     public ResponseEntity<ApiResponse<ResponseBoardDto>> getPortfolioById(
             @Parameter(description = "포폴 아이디", example = "1") @PathVariable Long id) {
         if (!portfolioRepository.existsById(id)) {

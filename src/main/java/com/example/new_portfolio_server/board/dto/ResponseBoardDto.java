@@ -4,6 +4,7 @@ import com.example.new_portfolio_server.board.entity.File;
 import com.example.new_portfolio_server.board.entity.Portfolio;
 import com.example.new_portfolio_server.bookmark.entity.BookMark;
 import com.example.new_portfolio_server.comments.entity.Comments;
+import com.example.new_portfolio_server.user.dto.ResponseUserDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -57,5 +58,21 @@ public class ResponseBoardDto {
     @Schema(description = "해당 게시글에 달린 댓글 리스트")
     private List<Comments> comments;
 
-
+    public static ResponseBoardDto from(Portfolio portfolio, List<BookMark> bookMarks, int bookmarkCount) {
+        return ResponseBoardDto.builder()
+                .id(portfolio.getId())
+                .introduce(portfolio.getIntroduce())
+                .part(portfolio.getPart())
+                .content(portfolio.getContent())
+                .links(portfolio.getLinks())
+                .skills(portfolio.getSkills())
+                .files(portfolio.getFiles())
+                .createDate(portfolio.getCreateDate())
+                .updateDate(portfolio.getUpdateDate())
+                .userId(portfolio.getUserId().getId()) // 작성자 ID
+                .bookMarks(bookMarks)
+                .bookmarkCount(bookmarkCount)
+                .comments(portfolio.getComments())
+                .build();
+    }
 }

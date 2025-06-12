@@ -1,6 +1,7 @@
 package com.example.new_portfolio_server.user;
 import com.example.new_portfolio_server.common.exception.DuplicateResourceException;
 import com.example.new_portfolio_server.user.dto.CreateUserDto;
+import com.example.new_portfolio_server.user.dto.ResponseUserDto;
 import com.example.new_portfolio_server.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -48,5 +49,11 @@ public class UserService {
                 throw new DuplicateResourceException("이미 사용중인 전화번호 입니다");
             }
         }
+    }
+
+    public ResponseUserDto getUserById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다. ID: " + id));
+        return ResponseUserDto.from(user);
     }
 }

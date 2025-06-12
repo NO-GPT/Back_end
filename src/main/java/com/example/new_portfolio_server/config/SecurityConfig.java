@@ -47,7 +47,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll() // Swagger 경로 허용
-                        .requestMatchers("/users/signup", "/auth/login", "/auth/reissue", "/portfolio/list", "/portfolio/top-bookmarked", "/portfolio/detail/").permitAll()
+                        .requestMatchers("/users/signup", "/auth/login", "/auth/reissue", "/portfolio/list", "/portfolio/top-bookmarked", "/portfolio/detail/", "users/detail/").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint))
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisServiceImpl), UsernamePasswordAuthenticationFilter.class);

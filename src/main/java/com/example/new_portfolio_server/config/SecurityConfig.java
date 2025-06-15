@@ -48,7 +48,6 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll() // Swagger 경로 허용
                         .requestMatchers("/users/signup", "/auth/login", "/auth/reissue").permitAll()
-                        .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint))
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisServiceImpl), UsernamePasswordAuthenticationFilter.class);

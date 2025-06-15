@@ -12,23 +12,23 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "image_upload")
-public class File {
+@Table(name = "banner_files")
+public class Banner {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id; // 파일 식별
 
-    @Column(name = "file_name")
-    private String fileName; // 파일 이름
+    @Column(name = "banner_name")
+    private String bannerName; // 파일 이름
 
     @Column(name = "contentType")
     private String contentType; // 파일 확장자
 
-    @Column(name = "file_size")
+    @Column(name = "banner_size")
     private Long size; // 파일 사이즈
 
-    @Column(name = "file_url")
-    private String fileUrl; // S3 URL 저장
+    @Column(name = "banner_url")
+    private String bannerUrl; // S3 URL 저장
 
     @Column(name = "created_date")
     @CreatedDate

@@ -50,6 +50,9 @@ public class Portfolio {
     @Column(name = "skills", length = 300, nullable = false)
     private String skills; // 사용한 스킬(사용한 툴, 언어 등)
 
+    @OneToMany(mappedBy = "portfolio", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Banner> banner_file;
+
     @OneToMany(mappedBy = "portfolio", cascade = CascadeType.ALL, orphanRemoval = true) // files PK
     private List<File> files = new ArrayList<>();
 
@@ -62,7 +65,8 @@ public class Portfolio {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id") // 외래 키 명시
-    @JsonIgnoreProperties({"portfolios", "bookMarks"}) // 순환 참조 방지
+//    @JsonIgnoreProperties({"portfolios", "bookMarks"}) // 순환 참조 방지
+    @JsonIgnore
     private User userId;
 
     @PrePersist

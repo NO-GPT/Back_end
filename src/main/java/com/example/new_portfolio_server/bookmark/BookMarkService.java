@@ -1,6 +1,6 @@
 package com.example.new_portfolio_server.bookmark;
 
-import com.example.new_portfolio_server.board.PortfolioRepository;
+import com.example.new_portfolio_server.board.repsoitory.PortfolioRepository;
 import com.example.new_portfolio_server.board.entity.Portfolio;
 import com.example.new_portfolio_server.bookmark.dto.CreateBookMarkDto;
 import com.example.new_portfolio_server.bookmark.dto.ResponseBookmarkDto;

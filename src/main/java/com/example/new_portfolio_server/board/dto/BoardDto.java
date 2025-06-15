@@ -39,6 +39,10 @@ public class BoardDto {
     @Schema(description = "기술 스택", example = "NestJS, VueJS, TypeORM, PostgresSQL, Docker, Redis ...")
     private String skills;
 
+    @Schema(description = "배너 사진")
+    @JsonIgnore
+    private MultipartFile banner;
+
     @Schema(description = "첨부할 프로젝트 사진")
     @JsonIgnore
     private List<MultipartFile> files;
@@ -55,5 +59,15 @@ public class BoardDto {
                 .links(this.links)
                 .skills(this.skills)
                 .build();
+    }
+
+    public void setFiles(List<MultipartFile> files){
+        // 파일이 비여있을 때 null로 처리
+        if(files == null || files.isEmpty() || files.stream().allMatch(MultipartFile::isEmpty)){
+            this.files = null;
+        }
+        else {
+            this.files = files;
+        }
     }
 }

@@ -1,5 +1,6 @@
 package com.example.new_portfolio_server.board.dto;
 
+import com.example.new_portfolio_server.board.entity.Banner;
 import com.example.new_portfolio_server.board.entity.File;
 import com.example.new_portfolio_server.board.entity.Portfolio;
 import com.example.new_portfolio_server.bookmark.entity.BookMark;
@@ -35,6 +36,9 @@ public class ResponseBoardDto {
     @Schema(description = "사용한 기술 스택", example = "SpringBoot, JPA, Redis, AWS, React ...")
     private String skills; // 사용한 스킬
 
+    @Schema(description = "배너 사진")
+    private List<Banner> banner;
+
     @Schema(description = "프로젝트 관련 사진")
     private List<File> files; // 파일 정보
 
@@ -67,6 +71,7 @@ public class ResponseBoardDto {
                 portfolio.getContent(),
                 portfolio.getLinks(),
                 portfolio.getSkills(),
+                portfolio.getBanner_file(),
                 portfolio.getFiles(),                      // File 리스트
                 portfolio.getCreateDate(),
                 portfolio.getUpdateDate(),

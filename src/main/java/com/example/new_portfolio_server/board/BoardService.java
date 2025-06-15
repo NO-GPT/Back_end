@@ -3,9 +3,13 @@ package com.example.new_portfolio_server.board;
 import com.example.new_portfolio_server.board.dto.BoardDto;
 import com.example.new_portfolio_server.board.dto.ResponseBoardDto;
 import com.example.new_portfolio_server.board.dto.UpdateBoardDto;
+import com.example.new_portfolio_server.board.entity.Banner;
 import com.example.new_portfolio_server.board.entity.File;
 import com.example.new_portfolio_server.board.entity.Portfolio;
 import com.example.new_portfolio_server.board.exception.PortfolioNotFoundException;
+import com.example.new_portfolio_server.board.repsoitory.BannerRepository;
+import com.example.new_portfolio_server.board.repsoitory.FileRepository;
+import com.example.new_portfolio_server.board.repsoitory.PortfolioRepository;
 import com.example.new_portfolio_server.common.exception.DuplicateResourceException;
 import com.example.new_portfolio_server.user.UserRepository;
 import com.example.new_portfolio_server.user.entity.User;
@@ -23,7 +27,7 @@ import org.typesense.api.exceptions.ObjectNotFound;
 import org.typesense.model.*;
 
 import java.io.IOException;
-import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.List;
@@ -38,6 +42,7 @@ public class BoardService {
     private final UserRepository userRepository;
     private final PortfolioRepository portfolioRepository;
     private final FileRepository fileRepository;
+    private final BannerRepository bannerRepository;
 
     private final ImageService imageService;
 
@@ -269,9 +274,26 @@ public class BoardService {
         // 포트폴리오 저장
         Portfolio saved = portfolioRepository.save(portfolio);
 
-        System.out.println(boardDto.getFiles().size());
-        // 파일 저장
+        // 업로드할 배너 파일
+        MultipartFile banner = boardDto.getBanner();
+        if(banner != null && !banner.isEmpty()){
+            String bannerUrls = imageService.uploadFile(banner);
+
+            Banner bannerEntity = Banner.builder()
+                    .bannerName(banner.getOriginalFilename())
+                    .contentType(banner.getContentType())
+                    .bannerUrl(bannerUrls)
+                    .size(banner.getSize())
+                    .createdDate(LocalDateTime.now())
+                    .portfolio(saved)
+                    .build();
+
+            bannerRepository.save(bannerEntity);
+        }
+
+        // 업로드할 파일
         List<MultipartFile> files = boardDto.getFiles();
+
         if(files != null && !files.isEmpty()){
             List<String> fileUrls = imageService.uploadFile(files);
 
@@ -284,6 +306,7 @@ public class BoardService {
                         .contentType(multipartFile.getContentType())
                         .size(multipartFile.getSize())
                         .fileUrl(fileUrl)
+                        .createdDate(LocalDateTime.now())
                         .portfolio(saved)
                         .build();
 
@@ -293,19 +316,67 @@ public class BoardService {
         return saved;
     }
 
-    // 수정
-//    @Transactional
-//    public Portfolio updatePortfolio(Long id, UpdateBoardDto boardDto) {
-//        Portfolio existing = portfolioRepository.findById(id)
-//                .orElseThrow(() -> new DuplicateResourceException("포트폴리오가 존재하지 않습니다."));
-//
-//        // DTO를 사용해 엔티티 업데이트
-//        boardDto.applyTo(existing);
-//
-//        return portfolioRepository.save(existing);
-//    }
+    //수정
+    @Transactional
+    public Portfolio updatePortfolio(Long id, UpdateBoardDto boardDto, List<MultipartFile> newFiles, MultipartFile banner) {
+        Portfolio existing = portfolioRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("포트폴리오가 존재하지 않습니다."));
 
-    // 북마크 개수를 기준으로 정렬된 커서 기반 페이지 네이션
+        boardDto.applyTo(existing);
+
+        if(banner != null && !banner.isEmpty()){
+            List<Banner> existingBanners = existing.getBanner_file();
+
+            for(Banner b : existingBanners){
+                String fileKey = b.getBannerUrl();
+                imageService.deleteFile(fileKey);
+            }
+
+            existingBanners.clear();
+
+            String fileKey = imageService.uploadFile(banner);
+
+            Banner newBanner = Banner.builder()
+                    .bannerName(banner.getOriginalFilename())
+                    .contentType(banner.getContentType())
+                    .size(banner.getSize())
+                    .bannerUrl(fileKey)
+                    .createdDate(LocalDateTime.now())
+                    .portfolio(existing)
+                    .build();
+
+            existingBanners.add(newBanner);
+        }
+
+        if(newFiles != null && !newFiles.isEmpty()){
+            List<MultipartFile> validFiles = newFiles.stream()
+                    .filter(file -> file != null && !file.isEmpty())
+                    .toList();
+
+            if(!validFiles.isEmpty()){
+                List<String> fileurls = imageService.uploadFile(validFiles);
+
+                for(int i=0; i<validFiles.size(); i++){
+                    MultipartFile file = validFiles.get(i);
+                    String url = fileurls.get(i);
+
+                    File fileEntity = File.builder()
+                            .fileName(file.getOriginalFilename())
+                            .fileUrl(url)
+                            .contentType(file.getContentType())
+                            .size(file.getSize())
+                            .createdDate(LocalDateTime.now())
+                            .portfolio(existing)
+                            .build();
+
+                    fileRepository.save(fileEntity);
+                }
+            }
+        }
+        return portfolioRepository.save(existing);
+    }
+
+    // 북마크 개수를 기준으로 정렬된 커서 기반 페이지 네이션 - 포트폴리오
     @Transactional
     public List<ResponseBoardDto> getAllPortfolioSortedByBookMark(Long cursorBookmarkCount, Long cursorId, int limit) {
         List<Portfolio> portfolios;
@@ -352,6 +423,7 @@ public class BoardService {
                 .updateDate(board.getUpdateDate())
                 .userId(board.getUserId().getId()) // 유저 ID 설정
                 .username(board.getUserId().getUsername())
+                .banner(board.getBanner_file())
                 .files(fileRepository.findByPortfolioId(id)) // 파일 목록 조회
                 .bookmarkCount((long)board.getBookMarks().size()) // 북마크 개수 설정
                 .bookMarks(board.getBookMarks())
@@ -377,6 +449,7 @@ public class BoardService {
                 .updateDate(board.getUpdateDate())
                 .userId(board.getUserId().getId())
                 .username(board.getUserId().getUsername())
+                .banner(board.getBanner_file())
                 .files(fileRepository.findByPortfolioId(board.getId()))
                 .bookmarkCount((long)board.getBookMarks().size())
                 .bookMarks(board.getBookMarks())
@@ -385,13 +458,12 @@ public class BoardService {
         ).toList();
     }
 
-
     @Transactional
     public Optional<File> getFile(Long id) {
         return fileRepository.findById(id);
     }
 
-    // 삭제
+    // 포폴 삭제
     @Transactional
     public void delete(Long id){
         Portfolio portfolio = portfolioRepository.findById(id)
@@ -405,8 +477,13 @@ public class BoardService {
         // S3에서 파일 삭제
         fileNames.forEach(imageService::deleteFile);
 
-        portfolioRepository.deleteById(id);
+        List<String> bannerNames = portfolio.getBanner_file().stream()
+                .map(Banner::getBannerUrl)
+                .toList();
+
+        bannerNames.forEach(imageService::deleteFile);
     }
+
 
     private List<ResponseBoardDto> toResponseBoardDtos(List<Portfolio> portfolios) {
         return portfolios.stream()
@@ -420,6 +497,7 @@ public class BoardService {
                         .createDate(board.getCreateDate())
                         .updateDate(board.getUpdateDate())
                         .userId(board.getUserId().getId())
+                        .banner(bannerRepository.findByPortfolioId(board.getId()))
                         .files(fileRepository.findByPortfolioId(board.getId()))
                         .bookMarks(board.getBookMarks())
                         .bookmarkCount((long)board.getBookMarks().size())

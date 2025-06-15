@@ -1,4 +1,4 @@
-package com.example.new_portfolio_server.board;
+package com.example.new_portfolio_server.board.repsoitory;
 
 import com.example.new_portfolio_server.board.entity.Portfolio;
 import io.lettuce.core.dynamic.annotation.Param;

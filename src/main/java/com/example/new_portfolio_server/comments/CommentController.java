@@ -6,10 +6,13 @@ import com.example.new_portfolio_server.comments.dto.CommentResponseDto;
 import com.example.new_portfolio_server.comments.entity.Comments;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -28,8 +31,19 @@ public class CommentController {
 
     // 댓글 전체 조회
     @GetMapping
-    public ResponseEntity<List<Comments>> getCommentAll(){
+    public ResponseEntity<List<CommentResponseDto>> getCommentAll() {
         return ResponseEntity.ok(commentService.getCommentAll());
+    }
+
+    @GetMapping("/list/{portfolioId}")
+    public ResponseEntity<List<CommentResponseDto>> getComments(
+            @PathVariable Long portfolioId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime cursorCreatedAt,
+            @RequestParam(required = false) Long cursorId,
+            @RequestParam(defaultValue = "10") int limit
+    ){
+        List<CommentResponseDto> result = commentService.getAllCommentSortedByDate(portfolioId, cursorCreatedAt, cursorId, limit);
+        return ResponseEntity.ok(result);
     }
 
     // 댓글 조회

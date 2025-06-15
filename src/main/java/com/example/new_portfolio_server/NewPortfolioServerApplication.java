@@ -21,9 +21,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 })
 @EnableJpaAuditing
 public class NewPortfolioServerApplication {
-
     public static void main(String[] args) {
         SpringApplication.run(NewPortfolioServerApplication.class, args);
     }
-
 }

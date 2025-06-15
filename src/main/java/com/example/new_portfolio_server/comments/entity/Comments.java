@@ -46,7 +46,7 @@ public class Comments {
     private Portfolio portfolio;
 
     @ManyToOne
-    @JoinColumn(name = "username")
+    @JoinColumn(name = "user_id")
     @JsonIgnore
     private User user;
 }

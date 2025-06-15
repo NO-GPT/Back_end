@@ -1,5 +1,6 @@
 package com.example.new_portfolio_server.board.dto;
 
+import com.example.new_portfolio_server.board.entity.Banner;
 import com.example.new_portfolio_server.board.entity.File;
 import com.example.new_portfolio_server.board.entity.Portfolio;
 import com.example.new_portfolio_server.bookmark.entity.BookMark;
@@ -10,7 +11,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
-import java.awt.print.Book;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -37,6 +37,9 @@ public class ResponseBoardDto {
     @Schema(description = "사용한 기술 스택", example = "SpringBoot, JPA, Redis, AWS, React ...")
     private String skills; // 사용한 스킬
 
+    @Schema(description = "배너 사진")
+    private List<Banner> banner;
+
     @Schema(description = "프로젝트 관련 사진")
     private List<File> files; // 파일 정보
 
@@ -49,30 +52,35 @@ public class ResponseBoardDto {
     @Schema(description = "작성자 아이디", example = "1")
     private Long userId; // 작성자 ID
 
+    private String username; // 유저 닉네임
+
     @Schema(description = "해당 게시글에 달린 북마크 리스트")
     private List<BookMark> bookMarks; // 북마크 목록
 
     @Schema(description = "북마크 갯수", example = "4")
-    private int bookmarkCount;
+    private Long bookmarkCount; // 북마크 개수
 
     @Schema(description = "해당 게시글에 달린 댓글 리스트")
     private List<Comments> comments;
 
-    public static ResponseBoardDto from(Portfolio portfolio, List<BookMark> bookMarks, int bookmarkCount) {
-        return ResponseBoardDto.builder()
-                .id(portfolio.getId())
-                .introduce(portfolio.getIntroduce())
-                .part(portfolio.getPart())
-                .content(portfolio.getContent())
-                .links(portfolio.getLinks())
-                .skills(portfolio.getSkills())
-                .files(portfolio.getFiles())
-                .createDate(portfolio.getCreateDate())
-                .updateDate(portfolio.getUpdateDate())
-                .userId(portfolio.getUserId().getId()) // 작성자 ID
-                .bookMarks(bookMarks)
-                .bookmarkCount(bookmarkCount)
-                .comments(portfolio.getComments())
-                .build();
+
+    public static ResponseBoardDto fromEntity(Portfolio portfolio) {
+        return new ResponseBoardDto(
+                portfolio.getId(),
+                portfolio.getIntroduce(),
+                portfolio.getPart(),
+                portfolio.getContent(),
+                portfolio.getLinks(),
+                portfolio.getSkills(),
+                portfolio.getBanner_file(),
+                portfolio.getFiles(),                      // File 리스트
+                portfolio.getCreateDate(),
+                portfolio.getUpdateDate(),
+                portfolio.getUserId().getId(),
+                portfolio.getUserId().getUsername(),
+                portfolio.getBookMarks(),                 // BookMark 리스트
+                (long) portfolio.getBookMarks().size(),   // 북마크 수
+                portfolio.getComments()                   // 댓글 리스트
+        );
     }
 }

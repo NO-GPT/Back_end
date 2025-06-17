@@ -112,7 +112,7 @@ public class BoardController {
     })
     @PostMapping("/create")
     public ApiResponse<?> createPortfolio(
-            @RequestPart("boardDto") BoardDto boardDto,
+            @RequestPart(value = "boardDto", required = false) BoardDto boardDto,
             @RequestPart(value ="banner", required = false) MultipartFile banner,
             @RequestPart(value = "files", required = false) List<MultipartFile> files) throws IOException {
         boardDto.setBanner(banner);

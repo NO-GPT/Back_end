@@ -1,6 +1,6 @@
 package com.example.new_portfolio_server.comments;
 
-import com.example.new_portfolio_server.board.PortfolioRepository;
+import com.example.new_portfolio_server.board.repsoitory.PortfolioRepository;
 import com.example.new_portfolio_server.board.entity.Portfolio;
 import com.example.new_portfolio_server.comments.dto.CommentEditRequestDto;
 import com.example.new_portfolio_server.comments.dto.CommentRequestDto;
@@ -12,7 +12,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,15 +27,17 @@ public class CommentService {
     // 댓글 생성
     @Transactional
     public CommentResponseDto createComment(CommentRequestDto commentRequestDto){
-        String username = commentRequestDto.getUsername();
-        User user = userRepository.findByUsername(username)
+        Long userid = commentRequestDto.getUserId();
+        User user = userRepository.findById(userid)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않은 유저입니다."));
 
         Long portfolioId = commentRequestDto.getPortfolioId();
         Portfolio portfolio = portfolioRepository.findById(portfolioId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않은 포트폴리오입니다."));
 
-        Comments comments = commentRequestDto.toEntity(portfolio, user);
+        Comments comments = commentRequestDto.toEntity();
+        comments.setUser(user);
+        comments.setPortfolio(portfolio);
 
         Comments saved = commentRepository.save(comments);
         return CommentResponseDto.fromEntity(saved);
@@ -52,8 +56,32 @@ public class CommentService {
     }
 
     // 댓글 전체 조회
-    public List<Comments> getCommentAll(){
-        return commentRepository.findAll();
+    public List<CommentResponseDto> getCommentAll() {
+        List<Comments> comments = commentRepository.findAll();
+
+        return comments.stream()
+                .map(CommentResponseDto::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    // 최신순으로 정렬된 커서 기반 페이지 네이션 - 댓글
+    @Transactional
+    public List<CommentResponseDto> getAllCommentSortedByDate(Long portfolioId, LocalDateTime cursorCreatedAt, Long cursorId, int limit){
+        Portfolio portfolio = portfolioRepository.findById(portfolioId)
+                .orElseThrow(() -> new IllegalArgumentException("포트폴리오가 존재하지 않습니다."));
+
+        List<Comments> comments;
+
+        if(cursorCreatedAt == null || cursorId == null){
+            comments = commentRepository.findInitialComments(portfolioId, limit);
+        }
+        else {
+            comments = commentRepository.findByCursor(portfolioId, cursorCreatedAt, cursorId, limit);
+        }
+
+        return comments.stream()
+                .map(CommentResponseDto::fromEntity)
+                .collect(Collectors.toList());
     }
 
     // 댓글 조회

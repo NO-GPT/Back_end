@@ -3,7 +3,12 @@ package com.example.new_portfolio_server.board;
 import com.example.new_portfolio_server.board.dto.BoardDto;
 import com.example.new_portfolio_server.board.dto.ResponseBoardDto;
 import com.example.new_portfolio_server.board.dto.UpdateBoardDto;
+import com.example.new_portfolio_server.board.entity.Banner;
+import com.example.new_portfolio_server.board.entity.File;
 import com.example.new_portfolio_server.board.entity.Portfolio;
+import com.example.new_portfolio_server.board.repsoitory.BannerRepository;
+import com.example.new_portfolio_server.board.repsoitory.FileRepository;
+import com.example.new_portfolio_server.board.repsoitory.PortfolioRepository;
 import com.example.new_portfolio_server.common.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -17,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,7 +37,12 @@ import java.util.Map;
 @Tag(name = "Portfolio API", description = "포트폴리오 관련 APIㅇ")
 public class BoardController {
     private final PortfolioRepository portfolioRepository;
+    private final FileRepository fileRepository;
+    private final BannerRepository bannerRepository;
+
     private final BoardService boardService;
+    private final ImageService imageService;
+
     private static final Logger logger = LoggerFactory.getLogger(BoardController.class);
 
     // 검색 ㅇㅇ
@@ -101,10 +112,11 @@ public class BoardController {
     })
     @PostMapping("/create")
     public ApiResponse<?> createPortfolio(
-            @ModelAttribute @Valid BoardDto boardDto) throws IOException {
-        if (boardDto.getFiles() == null || boardDto.getFiles().isEmpty()) {
-            return ApiResponse.error("파일이 전달되지 않았습니다.");
-        }
+            @RequestPart("boardDto") BoardDto boardDto,
+            @RequestPart("banner") MultipartFile banner,
+            @RequestPart(value = "files", required = false) List<MultipartFile> files) throws IOException {
+        boardDto.setBanner(banner);
+        boardDto.setFiles(files);
         return ApiResponse.success(boardService.createPortfolio(boardDto));
     }
 
@@ -119,11 +131,19 @@ public class BoardController {
                             schema = @Schema(implementation = ApiResponse.class))),
     })
     @GetMapping("/list")
-    public ResponseEntity<ApiResponse<List<Portfolio>>> getAllPortfolio() {
-        List<Portfolio> portfolios = boardService.getAllPortfolio();
+    public List<ResponseBoardDto> getPortfolioSortedByBookmark(
+            @RequestParam(required = false) Long cursorBookmarkCount,
+            @RequestParam(required = false) Long cursorId,
+            @RequestParam(defaultValue = "20") int limit
+    ){
+        return boardService.getAllPortfolioSortedByBookMark(cursorBookmarkCount, cursorId, limit);
+    }
+
+    // username으로 게시글 조회
+    @GetMapping("/list/user")
+    public ResponseEntity<List<ResponseBoardDto>> getPortfolioByUser(@RequestParam String username){
         return ResponseEntity
-                .ok(ApiResponse
-                        .success(portfolios));
+                .ok(boardService.getPortfolioByUsername(username));
     }
 
     // id값으로 게시글 조회
@@ -191,17 +211,21 @@ public class BoardController {
     @PatchMapping("update/{id}")
     public ResponseEntity<ApiResponse<Portfolio>> updatePortfolio(
             @PathVariable Long id,
-            @ModelAttribute @Valid UpdateBoardDto boardDto) {
+            @RequestPart("data") @Valid UpdateBoardDto boardDto,
+            @RequestPart(value = "files", required = false) List<MultipartFile> files,
+            @RequestPart(value = "banner", required = false) MultipartFile banner) {
+
         if (!portfolioRepository.existsById(id)) {
             return ResponseEntity
                     .status(HttpStatus.NOT_FOUND)
                     .body(ApiResponse
                             .error("포트폴리오가 존재하지 않습니다."));
         }
-        Portfolio updatedPortfolio = boardService.updatePortfolio(id, boardDto);
+
+        Portfolio updated = boardService.updatePortfolio(id, boardDto, files, banner);
         return ResponseEntity
                 .ok(ApiResponse
-                        .success(updatedPortfolio));
+                        .success(updated));
     }
 
     // id값으로 삭제
@@ -219,17 +243,42 @@ public class BoardController {
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = ApiResponse.class)))
     })
-    @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<String>> deletePortfolio(@PathVariable Long id) {
-        if (!portfolioRepository.existsById(id)) {
+    @DeleteMapping("/{boardId}")
+    public ResponseEntity<ApiResponse<String>> deletePortfolio(@PathVariable Long boardId) {
+        if (!portfolioRepository.existsById(boardId)) {
             return ResponseEntity
                     .status(HttpStatus.NOT_FOUND)
                     .body(ApiResponse
                             .error("포트폴리오가 존재하지 않습니다."));
         }
-        boardService.delete(id);
+        boardService.delete(boardId);
         return ResponseEntity
                 .ok(ApiResponse
                         .success("포트폴리오가 성공적으로 삭제되었습니다.", null));
+    }
+
+    // 단일 file만 삭제
+    @DeleteMapping("/file")
+    public ResponseEntity<ApiResponse<String>> deleteFile(@RequestParam Long fileId){
+        File file = fileRepository.findById(fileId)
+                .orElseThrow(() -> new IllegalArgumentException("파일이 존재하지 않습니다."));
+
+        String fileUrl = file.getFileUrl();
+        imageService.deleteFile(fileUrl); // s3 파일 삭제
+        fileRepository.deleteById(fileId); // db 파일 삭제
+
+        return ResponseEntity.ok(ApiResponse.success("파일이 성공적으로 삭제되었습니다.", null));
+    }
+
+    @DeleteMapping("/banner")
+    public ResponseEntity<ApiResponse<String>> deleteBanner(@RequestParam Long bannerId){
+        Banner banner = bannerRepository.findById(bannerId)
+                .orElseThrow(() -> new IllegalArgumentException("배너 파일이 존재하지 않습니다."));
+
+        String bannerUrl = banner.getBannerUrl();
+        imageService.deleteFile(bannerUrl);
+        bannerRepository.deleteById(bannerId);
+
+        return ResponseEntity.ok(ApiResponse.success("배너 파일이 성공적으로 삭제되었습니다."));
     }
 }

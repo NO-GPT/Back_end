@@ -1,8 +1,7 @@
 package com.example.new_portfolio_server.comments.dto;
 
-import com.example.new_portfolio_server.board.entity.Portfolio;
 import com.example.new_portfolio_server.comments.entity.Comments;
-import com.example.new_portfolio_server.user.entity.User;
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -21,13 +20,11 @@ public class CommentRequestDto {
 
     private Long portfolioId;
 
-    private String username;
+    private Long userId;
 
-    public Comments toEntity(Portfolio portfolio, User user){
+    public Comments toEntity(){
         return Comments.builder()
                 .body(this.body)
-                .portfolio(portfolio)
-                .user(user)
                 .build();
     }
 }

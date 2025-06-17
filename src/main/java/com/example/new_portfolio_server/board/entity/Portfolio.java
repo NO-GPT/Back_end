@@ -3,11 +3,12 @@ package com.example.new_portfolio_server.board.entity;
 import com.example.new_portfolio_server.comments.entity.Comments;
 import com.example.new_portfolio_server.user.entity.User;
 import com.example.new_portfolio_server.bookmark.entity.BookMark;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
@@ -28,12 +29,12 @@ public class Portfolio {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id; // 식별자
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
     @Column(name = "createDate", nullable = false)
+    @CreatedDate
     private LocalDateTime createDate; // 게시 날짜
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
     @Column(name = "updateDate")
+    @LastModifiedDate
     private LocalDateTime updateDate; // 수정날짜
 
     @Column(name = "introduce", length = 60, nullable = false)
@@ -51,6 +52,9 @@ public class Portfolio {
     @Column(name = "skills", length = 300, nullable = false)
     private String skills; // 사용한 스킬(사용한 툴, 언어 등)
 
+    @OneToMany(mappedBy = "portfolio", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Banner> banner_file;
+
     @OneToMany(mappedBy = "portfolio", cascade = CascadeType.ALL, orphanRemoval = true) // files PK
     private List<File> files = new ArrayList<>();
 
@@ -63,7 +67,8 @@ public class Portfolio {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id") // 외래 키 명시
-    @JsonIgnoreProperties({"portfolios", "bookMarks"}) // 순환 참조 방지
+//    @JsonIgnoreProperties({"portfolios", "bookMarks"}) // 순환 참조 방지
+    @JsonIgnore
     private User userId;
 
     @PrePersist

@@ -11,35 +11,55 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
-// nestjs의 가드 같은 역할?
-// 유효한 자격증명을 제공하지 않고 접근하려 할때 401 Unauthorized 에러를 리턴한다.
 @Slf4j
 @Component
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public void commence(HttpServletRequest req,
-                         HttpServletResponse res,
+    public void commence(HttpServletRequest request,
+                         HttpServletResponse response,
                          AuthenticationException authException) throws IOException, ServletException {
-        String requestURI = req.getRequestURI();
-        if (requestURI.startsWith("/v3/api-docs") || requestURI.startsWith("/swagger-ui")) {
-            return; // Swagger 경로의 인증 실패 무시
-        }
-        String token = req.getHeader("Authorization");
+        String requestURI = request.getRequestURI();
+        String token = request.getHeader("Authorization");
         String tokenInfo = token != null ? token.substring(0, Math.min(10, token.length())) : "없음";
-        String message = authException.getMessage();
 
-        log.error("인증 실패: URI: {}, 토큰: {}, 메시지: {}", requestURI, tokenInfo, message);
-        ApiResponse<Object> response = ApiResponse.error(message);
+        // Swagger 경로 무시
+        if (requestURI.startsWith("/v3/api-docs") || requestURI.startsWith("/swagger-ui")) {
+            return;
+        }
 
-        // HTTP 응답 설정
-        res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        res.setContentType("application/json");
-        res.setCharacterEncoding("UTF-8");
+        // 상세 인증 오류 메시지
+        Map<String, Object> errorDetails = new HashMap<>();
+        errorDetails.put("uri", requestURI);
+        errorDetails.put("token", tokenInfo);
 
-        // JSON으로 변환하여 응답 작성
-        res.getWriter().write(objectMapper.writeValueAsString(response));
+        String errorMessage = authException.getMessage();
+        if (errorMessage.contains("expired")) {
+            errorDetails.put("error", "토큰 만료");
+            errorDetails.put("message", "토큰이 만료되었습니다. 새 토큰을 발급받아 주세요.");
+        } else if (errorMessage.contains("invalid") || errorMessage.contains("malformed")) {
+            errorDetails.put("error", "토큰 유효성 검사 실패");
+            errorDetails.put("message", "유효하지 않은 토큰입니다. 토큰 형식을 확인해 주세요.");
+        } else if (errorMessage.contains("Full authentication is required")) {
+            errorDetails.put("error", "인증 필요");
+            errorDetails.put("message", "인증 토큰이 필요합니다. 'Bearer <token>' 형식을 사용하세요.");
+        } else {
+            errorDetails.put("error", "알 수 없는 인증 오류");
+            errorDetails.put("message", "인증 과정에서 오류가 발생했습니다: " + errorMessage);
+        }
+
+        log.error("인증 실패: URI: {}, 토큰: {}, 상세: {}", requestURI, tokenInfo, errorDetails);
+
+        ApiResponse<Object> apiResponse = ApiResponse.error(Arrays.toString(new Map[]{errorDetails}));
+
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write(objectMapper.writeValueAsString(apiResponse));
     }
 }

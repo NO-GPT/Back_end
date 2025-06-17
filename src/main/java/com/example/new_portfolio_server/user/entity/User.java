@@ -42,7 +42,7 @@ public class User {
     private String fullName;
 
     @Comment("유저 전번")
-    @Column(name = "tel", nullable = false, unique = false)       // 실명
+    @Column(name = "tel", nullable = false, unique = true)       // 실명
     private String tel;
 
     @Comment("유저 나이")

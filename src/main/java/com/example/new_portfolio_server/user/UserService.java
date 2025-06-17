@@ -2,7 +2,9 @@ package com.example.new_portfolio_server.user;
 import com.example.new_portfolio_server.common.exception.DuplicateResourceException;
 import com.example.new_portfolio_server.user.dto.CreateUserDto;
 import com.example.new_portfolio_server.user.dto.ResponseUserDto;
+import com.example.new_portfolio_server.user.dto.UpdateUserDto;
 import com.example.new_portfolio_server.user.entity.User;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -54,6 +56,16 @@ public class UserService {
     public ResponseUserDto getUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다. ID: " + id));
+        return ResponseUserDto.from(user);
+    }
+
+    @Transactional
+    public ResponseUserDto updateUser(Long id, UpdateUserDto dto) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다. ID: " + id));
+        dto.toEntity(passwordEncoder);
+        userRepository.save(user);
+
         return ResponseUserDto.from(user);
     }
 }

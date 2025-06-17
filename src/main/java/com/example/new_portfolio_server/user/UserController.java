@@ -4,6 +4,7 @@ import com.example.new_portfolio_server.board.dto.ResponseBoardDto;
 import com.example.new_portfolio_server.common.response.ApiResponse;
 import com.example.new_portfolio_server.user.dto.CreateUserDto;
 import com.example.new_portfolio_server.user.dto.ResponseUserDto;
+import com.example.new_portfolio_server.user.dto.UpdateUserDto;
 import com.example.new_portfolio_server.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -66,5 +67,35 @@ public class UserController {
         return ResponseEntity
                 .ok(ApiResponse
                         .successLong("회원가입 성공", userId));
+    }
+
+    @PatchMapping("/update/{id}")
+    @Operation(summary = "회원 정보 수정", description = "사용자 정보 업데이트")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "회원 정보 수정 성공",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "사용자를 찾을 수 없음",
+                    content = @Content)
+    })
+    public ResponseEntity<ApiResponse<ResponseUserDto>> updateUser(
+            @PathVariable Long id,
+            @RequestBody @Valid UpdateUserDto dto) {
+        if (!userRepository.existsById(id)) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse
+                            .error("사용자를 찾을 수 없습니다."));
+        }
+        userService.checkUserEmailAndUsername(dto.getUsername(), dto.getEmail(), dto.getTel(), id);
+        ResponseUserDto user = this.userService.updateUser(id, dto);
+
+        return ResponseEntity
+                .ok(ApiResponse
+                        .success("회원 정보 수정 성공", user));
     }
 }

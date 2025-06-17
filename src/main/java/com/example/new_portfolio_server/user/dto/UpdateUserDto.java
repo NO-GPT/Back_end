@@ -1,9 +1,11 @@
 package com.example.new_portfolio_server.user.dto;
 
+import com.example.new_portfolio_server.user.entity.User;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Setter
 @Getter
@@ -50,4 +52,20 @@ public class UpdateUserDto {
     private String githubId;
 
     private String profile;
+
+    public void toEntity(PasswordEncoder passwordEncoder) {
+        User.builder()
+                .username(this.username)
+                .password(passwordEncoder.encode(this.password))
+                .email(this.email)
+                .fullName(this.fullName)
+                .tel(this.tel)
+                .age(this.age)
+                .field(this.field)
+                .group(this.group)
+                .stack(this.stack)
+                .githubId(this.githubId)
+                .profile(this.profile)
+                .build();
+    }
 }

@@ -97,8 +97,6 @@ public class BoardController {
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = ApiResponse.class)))
     })
-
-    // 업로드
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<?> createPortfolio(
             @RequestPart("boardDto") BoardDto boardDto,
@@ -172,6 +170,10 @@ public class BoardController {
         List<ResponseBoardDto> portfolios = boardService.getTopBookmarkedPortfolios(page, size);
         return ResponseEntity.ok(ApiResponse.success(portfolios));
     }
+
+    // 카테고리별 조회
+
+
 
     // id값으로 수정
     @PatchMapping("/{id}")

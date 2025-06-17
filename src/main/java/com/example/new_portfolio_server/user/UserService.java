@@ -63,7 +63,7 @@ public class UserService {
     public ResponseUserDto updateUser(Long id, UpdateUserDto dto) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다. ID: " + id));
-        dto.toEntity(passwordEncoder);
+        dto.updateEntity(user, passwordEncoder);
         userRepository.save(user);
 
         return ResponseUserDto.from(user);

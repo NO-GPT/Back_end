@@ -43,19 +43,17 @@ public class UpdateUserDto {
 
     private String profile;
 
-    public void toEntity(PasswordEncoder passwordEncoder) {
-        User.builder()
-                .username(this.username)
-                .password(passwordEncoder.encode(this.password))
-                .email(this.email)
-                .fullName(this.fullName)
-                .tel(this.tel)
-                .age(this.age)
-                .field(this.field)
-                .group(this.group)
-                .stack(this.stack)
-                .githubId(this.githubId)
-                .profile(this.profile)
-                .build();
+    public void updateEntity(User user, PasswordEncoder passwordEncoder) {
+        if (this.username != null) user.setUsername(this.username);
+        if (this.password != null) user.setPassword(passwordEncoder.encode(this.password));
+        if (this.email != null) user.setEmail(this.email);
+        if (this.fullName != null) user.setFullName(this.fullName);
+        if (this.tel != null) user.setTel(this.tel);
+        if (this.age != 0) user.setAge(this.age); // 0은 기본값으로 간주
+        if (this.field != null) user.setField(this.field);
+        if (this.group != null) user.setGroup(this.group);
+        if (this.stack != null) user.setStack(this.stack);
+        if (this.githubId != null) user.setGithubId(this.githubId);
+        if (this.profile != null) user.setProfile(this.profile);
     }
 }

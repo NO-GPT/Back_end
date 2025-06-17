@@ -1,6 +1,7 @@
 package com.example.new_portfolio_server.user.entity;
 
 import com.example.new_portfolio_server.board.entity.Portfolio;
+import com.example.new_portfolio_server.board.likes.entity.Like;
 import com.example.new_portfolio_server.bookmark.entity.BookMark;
 import com.example.new_portfolio_server.comments.entity.Comments;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -68,6 +69,10 @@ public class User {
     @Comment("계정 업데이트 시간")
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Like> likes = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnoreProperties("user") // 순환 참조 방지

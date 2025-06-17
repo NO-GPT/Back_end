@@ -28,7 +28,7 @@ public class BookMarkController {
                         .success(bookMarks));
     }
 
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<ApiResponse<Long>> createBookMark(
             @RequestBody @Valid CreateBookMarkDto dto) {
         Long bookMarkId = bookMarkService.createBookMark(dto);

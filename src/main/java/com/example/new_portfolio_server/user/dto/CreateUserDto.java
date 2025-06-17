@@ -42,7 +42,6 @@ public class CreateUserDto {
     private String tel;
 
     @NotNull(message = "나이는 필수 입력 값입니다.")
-    @NotBlank(message = "나이는 필수 입력 값입니다.")
     @Min(value = 0, message = "나이는 0 이상이어야 합니다.")
     @Max(value = 150, message = "나이는 150 이하이어야 합니다.")
     @Schema(description = "나이", example = "20")

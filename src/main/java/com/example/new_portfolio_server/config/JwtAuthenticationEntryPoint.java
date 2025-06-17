@@ -55,7 +55,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
         log.error("인증 실패: URI: {}, 토큰: {}, 상세: {}", requestURI, tokenInfo, errorDetails);
 
-        ApiResponse<Object> apiResponse = ApiResponse.error(Arrays.toString(new Map[]{errorDetails}));
+        ApiResponse<Object> apiResponse = ApiResponse.error(errorDetails.toString());
 
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");

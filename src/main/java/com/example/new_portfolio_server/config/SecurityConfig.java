@@ -47,6 +47,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/users/signup", "/auth/login", "/auth/reissue", "/portfolio/list", "/portfolio/top-bookmarked", "/portfolio/detail/{id}", "users/detail/{id}").permitAll()
+                        .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint))
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisServiceImpl), UsernamePasswordAuthenticationFilter.class);

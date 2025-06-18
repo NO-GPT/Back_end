@@ -26,6 +26,7 @@ import org.typesense.api.Client;
 import org.typesense.api.exceptions.ObjectNotFound;
 import org.typesense.model.*;
 
+import javax.sound.sampled.Port;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -269,7 +270,7 @@ public class BoardService {
 
         // 포트폴리오 생성 및 유저 설정
         Portfolio portfolio = boardDto.toEntity();
-        portfolio.setUserId(user);
+        portfolio.setUser(user);
 
         // 포트폴리오 저장
         Portfolio saved = portfolioRepository.save(portfolio);
@@ -421,8 +422,8 @@ public class BoardService {
                 .skills(board.getSkills())
                 .createDate(board.getCreateDate())
                 .updateDate(board.getUpdateDate())
-                .userId(board.getUserId().getId()) // 유저 ID 설정
-                .username(board.getUserId().getUsername())
+                .userId(board.getUser().getId()) // 유저 ID 설정
+                .username(board.getUser().getUsername())
                 .banner(board.getBanner_file())
                 .files(fileRepository.findByPortfolioId(id)) // 파일 목록 조회
                 .bookmarkCount((long)board.getBookMarks().size()) // 북마크 개수 설정
@@ -447,8 +448,8 @@ public class BoardService {
                 .skills(board.getSkills())
                 .createDate(board.getCreateDate())
                 .updateDate(board.getUpdateDate())
-                .userId(board.getUserId().getId())
-                .username(board.getUserId().getUsername())
+                .userId(board.getUser().getId())
+                .username(board.getUser().getUsername())
                 .banner(board.getBanner_file())
                 .files(fileRepository.findByPortfolioId(board.getId()))
                 .bookmarkCount((long)board.getBookMarks().size())
@@ -461,6 +462,49 @@ public class BoardService {
     @Transactional
     public Optional<File> getFile(Long id) {
         return fileRepository.findById(id);
+    }
+
+    @Transactional
+    public List<ResponseBoardDto> searchByCategorys(List<String> parts, List<String> groups, List<String> skills) {
+        List<Portfolio> portfolios;
+
+        if ((parts == null || parts.isEmpty()) &&
+                (groups == null || groups.isEmpty()) &&
+                (skills == null || skills.isEmpty())) {
+            portfolios = portfolioRepository.findAll();
+        }
+        else if ((parts != null && !parts.isEmpty()) && (groups != null && !groups.isEmpty())) {
+            portfolios = portfolioRepository.findByPartInAndUser_GroupIn(parts, groups);
+        }
+        else if (parts != null && !parts.isEmpty()) {
+            portfolios = portfolioRepository.findByPartIn(parts);
+        }
+        else if (groups != null && !groups.isEmpty()) {
+            portfolios = portfolioRepository.findByUser_GroupIn(groups);
+        } else {
+            portfolios = portfolioRepository.findAll();  // 기본 fallback
+        }
+
+        if (skills != null && !skills.isEmpty()) {
+            portfolios = portfolios.stream()
+                    .filter(p -> {
+                        String pSkills = p.getSkills();
+                        if(pSkills == null) return false;
+
+                        List<String> savedSkills = Arrays.stream(pSkills.split("[,\\s]+"))
+                                .map(String::toLowerCase)
+                                .toList();
+
+                        return skills.stream()
+                                .map(String::toLowerCase)
+                                .allMatch(savedSkills::contains);
+                    })
+                    .collect(Collectors.toList());
+        }
+
+        return portfolios.stream()
+                .map(ResponseBoardDto::fromEntity)
+                .collect(Collectors.toList());
     }
 
     // 포폴 삭제
@@ -496,7 +540,7 @@ public class BoardService {
                         .skills(board.getSkills())
                         .createDate(board.getCreateDate())
                         .updateDate(board.getUpdateDate())
-                        .userId(board.getUserId().getId())
+                        .userId(board.getUser().getId())
                         .banner(bannerRepository.findByPortfolioId(board.getId()))
                         .files(fileRepository.findByPortfolioId(board.getId()))
                         .bookMarks(board.getBookMarks())

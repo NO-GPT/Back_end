@@ -172,6 +172,18 @@ public class BoardController {
     }
 
     // 카테고리별 조회
+    @GetMapping("/search/category")
+    public ResponseEntity<ApiResponse<List<ResponseBoardDto>>> getPortfolioByCategory(
+            @RequestParam(required = false) List<String> parts,
+            @RequestParam(required = false) List<String> groups,
+            @RequestParam(required = false) List<String> skills){
+        List<ResponseBoardDto> portfolios = boardService.searchByCategorys(parts, groups, skills);
+
+        if(portfolios == null || portfolios.isEmpty()){
+            return ResponseEntity.ok(ApiResponse.fail("해당 카테고리에 해당하는 포트폴리오가 없습니다."));
+        }
+        return ResponseEntity.ok(ApiResponse.success(portfolios));
+    }
 
 
 

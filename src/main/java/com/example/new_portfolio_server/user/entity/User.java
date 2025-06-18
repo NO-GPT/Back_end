@@ -78,7 +78,7 @@ public class User {
     @JsonIgnoreProperties("user") // 순환 참조 방지
     private List<BookMark> bookMarks = new ArrayList<>();
 
-    @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 //    @JsonIgnoreProperties("userId") // 순환 참조 방지
     @JsonIgnore
     private List<Portfolio> portfolios = new ArrayList<>();
@@ -86,8 +86,6 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<Comments> comments = new ArrayList<>();
-
-
 
     // BookMark 추가 헬퍼 메서드
     public void addBookMark(BookMark bookMark) {
@@ -110,13 +108,13 @@ public class User {
     // Portfolio 추가 헬퍼 메서드
     public void addPortfolio(Portfolio portfolio) {
         portfolios.add(portfolio);
-        portfolio.setUserId(this);
+        portfolio.setUser(this);
     }
 
     // Portfolio 제거 헬퍼 메서드
     public void removePortfolio(Portfolio portfolio) {
         portfolios.remove(portfolio);
-        portfolio.setUserId(null);
+        portfolio.setUser(null);
     }
 
     @PreUpdate

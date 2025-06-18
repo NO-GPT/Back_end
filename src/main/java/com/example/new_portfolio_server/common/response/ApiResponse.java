@@ -1,7 +1,10 @@
 package com.example.new_portfolio_server.common.response;
 
+import com.example.new_portfolio_server.board.dto.ResponseBoardDto;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -30,6 +33,10 @@ public class ApiResponse<T> {
     }
 
     public static <T> ApiResponse<T> error(String message) {
+        return new ApiResponse<>(false, message, null);
+    }
+
+    public static ApiResponse<List<ResponseBoardDto>> fail(String message) {
         return new ApiResponse<>(false, message, null);
     }
 }

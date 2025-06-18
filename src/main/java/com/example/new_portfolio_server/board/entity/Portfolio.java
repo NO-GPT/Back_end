@@ -73,11 +73,11 @@ public class Portfolio {
     @OneToMany(mappedBy = "portfolio", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BookMark> bookMarks = new ArrayList<>();
 
+    //    @JsonIgnoreProperties({"portfolios", "bookMarks"}) // 순환 참조 방지
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id") // 외래 키 명시
-//    @JsonIgnoreProperties({"portfolios", "bookMarks"}) // 순환 참조 방지
+    @JoinColumn(name = "user_id")
     @JsonIgnore
-    private User userId;
+    private User user;
 
     @PrePersist
     protected void onCreate() {

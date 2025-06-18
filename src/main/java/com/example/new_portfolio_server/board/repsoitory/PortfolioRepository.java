@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import javax.sound.sampled.Port;
 import java.util.List;
 
 public interface PortfolioRepository extends JpaRepository<Portfolio, Long>{
@@ -41,4 +42,13 @@ public interface PortfolioRepository extends JpaRepository<Portfolio, Long>{
     );
 
     List<Portfolio> findByUserId_Username(String username);
+
+    // part 검색
+    List<Portfolio> findByPartIn(List<String> parts);
+
+    // group 검색
+    List<Portfolio> findByUser_GroupIn(List<String> groups);
+
+    // part + group 검색
+    List<Portfolio> findByPartInAndUser_GroupIn(List<String> parts, List<String> groups);
 }

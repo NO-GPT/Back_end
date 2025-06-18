@@ -82,9 +82,9 @@ public class ResponseBoardDto {
                 portfolio.getFiles(),                      // File 리스트
                 portfolio.getCreateDate(),
                 portfolio.getUpdateDate(),
-                portfolio.getUserId().getId(),
-                portfolio.getUserId().getUsername(),
-                portfolio.getUserId().getGroup(),
+                portfolio.getUser().getId(),
+                portfolio.getUser().getUsername(),
+                portfolio.getUser().getGroup(),
                 portfolio.getLikeCount(),
                 portfolio.getBookMarks(),                 // BookMark 리스트
                 (long) portfolio.getBookMarks().size(),   // 북마크 수

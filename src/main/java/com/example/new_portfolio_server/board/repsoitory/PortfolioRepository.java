@@ -19,7 +19,7 @@ public interface PortfolioRepository extends JpaRepository<Portfolio, Long>{
     // 초기 조회 - 커서 없을 시, 좋아요 개수 -> id 순으로 DESC 정렬
     @Query(value = """
     SELECT * FROM portfolio p
-    ORDER BY p.like_count DESC, p.portfolio_id DESC
+    ORDER BY p.like_count DESC, p.id DESC
     LIMIT :limit
     """, nativeQuery = true)
     List<Portfolio> findInitialPortfolios(@Param("limit") int limit);
@@ -28,8 +28,8 @@ public interface PortfolioRepository extends JpaRepository<Portfolio, Long>{
     @Query(value = """
     SELECT * FROM portfolio p
     WHERE p.like_count < :likeCount
-    OR (p.like_count = :likeCount AND p.portfolio_id < :cursorId)
-    ORDER BY p.like_count DESC, p.portfolio_id DESC
+    OR (p.like_count = :likeCount AND p.id < :cursorId)
+    ORDER BY p.like_count DESC, p.id DESC
     LIMIT :limit
     """, nativeQuery = true)
     List<Portfolio> findPortfolioByCursor(

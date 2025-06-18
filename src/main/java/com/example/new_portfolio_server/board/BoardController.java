@@ -1,6 +1,7 @@
 package com.example.new_portfolio_server.board;
 
 import com.example.new_portfolio_server.board.dto.BoardDto;
+import com.example.new_portfolio_server.board.dto.CursorResponse;
 import com.example.new_portfolio_server.board.dto.ResponseBoardDto;
 import com.example.new_portfolio_server.board.dto.UpdateBoardDto;
 import com.example.new_portfolio_server.board.entity.Banner;
@@ -107,12 +108,12 @@ public class BoardController {
         return ApiResponse.success(boardService.createPortfolio(boardDto));
     }
 
-    // 커서 기반 페이지네이션(포트폴리오)
+    // 커서 기반 페이지네이션(포트폴리오) - 좋아요 기능
     @GetMapping("/list")
-    public List<ResponseBoardDto> getPortfolioSortedByLike(
+    public CursorResponse getPortfolioSortedByLike(
             @RequestParam(required = false) Long likeCount,
             @RequestParam(required = false) Long cursorId,
-            @RequestParam(defaultValue = "20") int limit
+            @RequestParam(defaultValue = "2") int limit
     ){
         return boardService.getAllPortfolioSortedByLike(likeCount, cursorId, limit);
     }

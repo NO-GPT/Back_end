@@ -1,15 +1,15 @@
 package com.example.new_portfolio_server.board.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 
 import java.util.List;
 
-@Getter
+@Data
 @AllArgsConstructor
-public class CursorResponse<T> {
-    private List<T> content;
+public class CursorResponse {
+    private Long nextLikeCount;
     private Long nextCursorId;
-    private Long nextCursorBookmarkCount;
-    private boolean hasNext;
+    private List<ResponseBoardDto> portfolios;
 }

@@ -1,6 +1,7 @@
 package com.example.new_portfolio_server.board;
 
 import com.example.new_portfolio_server.board.dto.BoardDto;
+import com.example.new_portfolio_server.board.dto.CursorResponse;
 import com.example.new_portfolio_server.board.dto.ResponseBoardDto;
 import com.example.new_portfolio_server.board.dto.UpdateBoardDto;
 import com.example.new_portfolio_server.board.entity.Banner;
@@ -378,8 +379,7 @@ public class BoardService {
     }
 
     // 좋아요 개수를 기준으로 정렬된 커서 기반 페이지 네이션 - 포트폴리오
-    @Transactional
-    public List<ResponseBoardDto> getAllPortfolioSortedByLike(Long likeCount, Long cursorId, int limit) {
+    public CursorResponse getAllPortfolioSortedByLike(Long likeCount, Long cursorId, int limit) {
         List<Portfolio> portfolios;
 
         if (likeCount == null || cursorId == null) {
@@ -392,11 +392,12 @@ public class BoardService {
             throw new PortfolioNotFoundException("포트폴리오가 더 이상 존재하지 않습니다.");
         }
 
-        System.out.print("likesCount : " + likeCount + " cursorId : " + cursorId);
-
-        return portfolios.stream()
+        List<ResponseBoardDto> result = portfolios.stream()
                 .map(ResponseBoardDto::fromEntity)
                 .collect(Collectors.toList());
+
+        Portfolio last = portfolios.getLast();
+        return new CursorResponse(last.getLikeCount(), last.getId(), result);
     }
 
     @Transactional

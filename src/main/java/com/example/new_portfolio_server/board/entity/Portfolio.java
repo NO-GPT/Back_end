@@ -28,7 +28,6 @@ import java.util.List;
 public class Portfolio {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "portfolio_id")
     private Long id; // 식별자
 
     @Column(name = "createDate", nullable = false)

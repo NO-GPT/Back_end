@@ -32,7 +32,6 @@ public class UserController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<User>>> getUsers() {
         List<User> users =  userService.getUsers();
-
         return ResponseEntity
                 .ok(ApiResponse
                         .success(users));

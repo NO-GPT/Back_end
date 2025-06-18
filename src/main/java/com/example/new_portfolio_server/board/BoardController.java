@@ -1,6 +1,7 @@
 package com.example.new_portfolio_server.board;
 
 import com.example.new_portfolio_server.board.dto.BoardDto;
+import com.example.new_portfolio_server.board.dto.CursorResponse;
 import com.example.new_portfolio_server.board.dto.ResponseBoardDto;
 import com.example.new_portfolio_server.board.dto.UpdateBoardDto;
 import com.example.new_portfolio_server.board.entity.Banner;
@@ -110,7 +111,7 @@ public class BoardController {
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = ApiResponse.class)))
     })
-    @PostMapping("/create")
+    @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<?> createPortfolio(
             @RequestPart(value = "boardDto", required = false) BoardDto boardDto,
             @RequestPart(value ="banner", required = false) MultipartFile banner,
@@ -131,12 +132,12 @@ public class BoardController {
                             schema = @Schema(implementation = ApiResponse.class))),
     })
     @GetMapping("/list")
-    public List<ResponseBoardDto> getPortfolioSortedByBookmark(
-            @RequestParam(required = false) Long cursorBookmarkCount,
+    public CursorResponse getPortfolioSortedByLike(
+            @RequestParam(required = false) Long likeCount,
             @RequestParam(required = false) Long cursorId,
-            @RequestParam(defaultValue = "20") int limit
+            @RequestParam(defaultValue = "2") int limit
     ){
-        return boardService.getAllPortfolioSortedByBookMark(cursorBookmarkCount, cursorId, limit);
+        return boardService.getAllPortfolioSortedByLike(likeCount, cursorId, limit);
     }
 
     // username으로 게시글 조회
@@ -193,6 +194,20 @@ public class BoardController {
         return ResponseEntity.ok(ApiResponse.success(portfolios));
     }
 
+    // 카테고리별 조회
+    @GetMapping("/search/category")
+    public ResponseEntity<ApiResponse<List<ResponseBoardDto>>> getPortfolioByCategory(
+            @RequestParam(required = false) List<String> parts,
+            @RequestParam(required = false) List<String> groups,
+            @RequestParam(required = false) List<String> skills){
+        List<ResponseBoardDto> portfolios = boardService.searchByCategorys(parts, groups, skills);
+
+        if(portfolios == null || portfolios.isEmpty()){
+            return ResponseEntity.ok(ApiResponse.fail("해당 카테고리에 해당하는 포트폴리오가 없습니다."));
+        }
+        return ResponseEntity.ok(ApiResponse.success(portfolios));
+    }
+
     // id값으로 수정
     @Operation(summary = "포트폴리오 조회 수정", description = "수정합니다",
             security = @SecurityRequirement(name = "bearerAuth"))
@@ -243,7 +258,7 @@ public class BoardController {
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = ApiResponse.class)))
     })
-    @DeleteMapping("/{boardId}")
+    @DeleteMapping("/delete/{boardId}")
     public ResponseEntity<ApiResponse<String>> deletePortfolio(@PathVariable Long boardId) {
         if (!portfolioRepository.existsById(boardId)) {
             return ResponseEntity
@@ -258,7 +273,7 @@ public class BoardController {
     }
 
     // 단일 file만 삭제
-    @DeleteMapping("/file")
+    @DeleteMapping("/delete/file")
     public ResponseEntity<ApiResponse<String>> deleteFile(@RequestParam Long fileId){
         File file = fileRepository.findById(fileId)
                 .orElseThrow(() -> new IllegalArgumentException("파일이 존재하지 않습니다."));
@@ -270,7 +285,7 @@ public class BoardController {
         return ResponseEntity.ok(ApiResponse.success("파일이 성공적으로 삭제되었습니다.", null));
     }
 
-    @DeleteMapping("/banner")
+    @DeleteMapping("/delete/banner")
     public ResponseEntity<ApiResponse<String>> deleteBanner(@RequestParam Long bannerId){
         Banner banner = bannerRepository.findById(bannerId)
                 .orElseThrow(() -> new IllegalArgumentException("배너 파일이 존재하지 않습니다."));

@@ -377,23 +377,22 @@ public class BoardService {
         return portfolioRepository.save(existing);
     }
 
-    // 북마크 개수를 기준으로 정렬된 커서 기반 페이지 네이션 - 포트폴리오
+    // 좋아요 개수를 기준으로 정렬된 커서 기반 페이지 네이션 - 포트폴리오
     @Transactional
-    public List<ResponseBoardDto> getAllPortfolioSortedByBookMark(Long cursorBookmarkCount, Long cursorId, int limit) {
+    public List<ResponseBoardDto> getAllPortfolioSortedByLike(Long likeCount, Long cursorId, int limit) {
         List<Portfolio> portfolios;
 
-        if(cursorBookmarkCount == null || cursorId == null){
+        if (likeCount == null || cursorId == null) {
             portfolios = portfolioRepository.findInitialPortfolios(limit);
-        }
-        else {
-            portfolios = portfolioRepository.findPortfolioByCursor(cursorBookmarkCount, cursorId, limit);
+        } else {
+            portfolios = portfolioRepository.findPortfolioByCursor(likeCount, cursorId, limit);
         }
 
-        if(portfolios.isEmpty()){
+        if (portfolios.isEmpty()) {
             throw new PortfolioNotFoundException("포트폴리오가 더 이상 존재하지 않습니다.");
         }
 
-        System.out.print("cursorBookmarkCount : " + cursorBookmarkCount + " cursorId : " + cursorId);
+        System.out.print("likesCount : " + likeCount + " cursorId : " + cursorId);
 
         return portfolios.stream()
                 .map(ResponseBoardDto::fromEntity)
@@ -526,6 +525,7 @@ public class BoardService {
                 .toList();
 
         bannerNames.forEach(imageService::deleteFile);
+        portfolioRepository.deleteById(id);
     }
 
 

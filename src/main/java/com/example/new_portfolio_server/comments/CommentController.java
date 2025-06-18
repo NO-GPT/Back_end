@@ -24,16 +24,16 @@ public class CommentController {
     private final CommentService commentService;
 
     // 댓글 게시
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<CommentResponseDto> createComment(@RequestBody @Valid CommentRequestDto commentRequestDto){
         return ResponseEntity.ok(commentService.createComment(commentRequestDto));
     }
 
-    // 댓글 전체 조회
-    @GetMapping
-    public ResponseEntity<List<CommentResponseDto>> getCommentAll() {
-        return ResponseEntity.ok(commentService.getCommentAll());
-    }
+//    // 댓글 전체 조회
+//    @GetMapping
+//    public ResponseEntity<List<CommentResponseDto>> getCommentAll() {
+//        return ResponseEntity.ok(commentService.getCommentAll());
+//    }
 
     @GetMapping("/list/{portfolioId}")
     public ResponseEntity<List<CommentResponseDto>> getComments(

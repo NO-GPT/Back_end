@@ -109,12 +109,12 @@ public class BoardController {
 
     // 커서 기반 페이지네이션(포트폴리오)
     @GetMapping("/list")
-    public List<ResponseBoardDto> getPortfolioSortedByBookmark(
-            @RequestParam(required = false) Long cursorBookmarkCount,
+    public List<ResponseBoardDto> getPortfolioSortedByLike(
+            @RequestParam(required = false) Long likeCount,
             @RequestParam(required = false) Long cursorId,
             @RequestParam(defaultValue = "20") int limit
     ){
-        return boardService.getAllPortfolioSortedByBookMark(cursorBookmarkCount, cursorId, limit);
+        return boardService.getAllPortfolioSortedByLike(likeCount, cursorId, limit);
     }
 
     // username으로 게시글 조회
@@ -184,8 +184,6 @@ public class BoardController {
         }
         return ResponseEntity.ok(ApiResponse.success(portfolios));
     }
-
-
 
     // id값으로 수정
     @PatchMapping("/{id}")

@@ -56,13 +56,13 @@ public class CommentService {
     }
 
     // 댓글 전체 조회
-    public List<CommentResponseDto> getCommentAll() {
-        List<Comments> comments = commentRepository.findAll();
-
-        return comments.stream()
-                .map(CommentResponseDto::fromEntity)
-                .collect(Collectors.toList());
-    }
+//    public List<CommentResponseDto> getCommentAll() {
+//        List<Comments> comments = commentRepository.findAll();
+//
+//        return comments.stream()
+//                .map(CommentResponseDto::fromEntity)
+//                .collect(Collectors.toList());
+//    }
 
     // 최신순으로 정렬된 커서 기반 페이지 네이션 - 댓글
     @Transactional

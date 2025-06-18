@@ -15,28 +15,25 @@ public interface PortfolioRepository extends JpaRepository<Portfolio, Long>{
 
     @Query("SELECT p FROM Portfolio p ORDER BY SIZE(p.bookMarks) DESC")
     List<Portfolio> findAllOrderByBookMarksSizeDesc(Pageable pageable);
-    // 초기 조회 - 커서 없을 시, 북마크 개수 -> id 순으로 DESC 정렬
+
+    // 초기 조회 - 커서 없을 시, 좋아요 개수 -> id 순으로 DESC 정렬
     @Query(value = """
-        SELECT p.* FROM portfolio p
-        LEFT JOIN book_mark bm ON p.id = bm.portfolio_id
-        GROUP BY p.id
-        ORDER BY COUNT(bm.id) DESC, p.id DESC
-        LIMIT :limit
+    SELECT * FROM portfolio p
+    ORDER BY p.like_count DESC, p.portfolio_id DESC
+    LIMIT :limit
     """, nativeQuery = true)
     List<Portfolio> findInitialPortfolios(@Param("limit") int limit);
 
 
     @Query(value = """
-        SELECT p.* FROM portfolio p
-        LEFT JOIN book_mark bm ON p.id = bm.portfolio_id
-        GROUP BY p.id
-        HAVING COUNT(bm.id) < :cursorBookmarkCount
-           OR (COUNT(bm.id) = :cursorBookmarkCount AND p.id < :cursorId)
-        ORDER BY COUNT(bm.id) DESC, p.id DESC
-        LIMIT :limit
+    SELECT * FROM portfolio p
+    WHERE p.like_count < :likeCount
+    OR (p.like_count = :likeCount AND p.portfolio_id < :cursorId)
+    ORDER BY p.like_count DESC, p.portfolio_id DESC
+    LIMIT :limit
     """, nativeQuery = true)
     List<Portfolio> findPortfolioByCursor(
-            @Param("cursorBookmarkCount") long cursorBookmarkCount,
+            @Param("likeCount") long likeCount,
             @Param("cursorId") long cursorId,
             @Param("limit") int limit
     );

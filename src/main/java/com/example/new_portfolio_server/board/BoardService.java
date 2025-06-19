@@ -1,5 +1,6 @@
 package com.example.new_portfolio_server.board;
 
+import com.amazonaws.auth.policy.Resource;
 import com.example.new_portfolio_server.board.dto.BoardDto;
 import com.example.new_portfolio_server.board.dto.CursorResponse;
 import com.example.new_portfolio_server.board.dto.ResponseBoardDto;
@@ -8,12 +9,14 @@ import com.example.new_portfolio_server.board.entity.Banner;
 import com.example.new_portfolio_server.board.entity.File;
 import com.example.new_portfolio_server.board.entity.Portfolio;
 import com.example.new_portfolio_server.board.exception.PortfolioNotFoundException;
+import com.example.new_portfolio_server.board.file.ImageService;
 import com.example.new_portfolio_server.board.repsoitory.BannerRepository;
 import com.example.new_portfolio_server.board.repsoitory.FileRepository;
 import com.example.new_portfolio_server.board.repsoitory.PortfolioRepository;
 import com.example.new_portfolio_server.common.exception.DuplicateResourceException;
 import com.example.new_portfolio_server.user.UserRepository;
 import com.example.new_portfolio_server.user.entity.User;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -27,7 +30,6 @@ import org.typesense.api.Client;
 import org.typesense.api.exceptions.ObjectNotFound;
 import org.typesense.model.*;
 
-import javax.sound.sampled.Port;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;

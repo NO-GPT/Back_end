@@ -466,37 +466,84 @@ public class BoardService {
         return fileRepository.findById(id);
     }
 
+//    // 카테고리 검색
+//    @Transactional
+//    public List<ResponseBoardDto> searchByCategorys(List<String> parts, List<String> groups, List<String> skills) {
+//        List<Portfolio> portfolios;
+//
+//        if ((parts == null || parts.isEmpty()) &&
+//                (groups == null || groups.isEmpty()) &&
+//                (skills == null || skills.isEmpty())) {
+//            portfolios = portfolioRepository.findAll();
+//        }
+//        else if ((parts != null && !parts.isEmpty()) && (groups != null && !groups.isEmpty())) {
+//            portfolios = portfolioRepository.findByPartInAndUser_GroupIn(parts, groups);
+//        }
+//        else if (parts != null && !parts.isEmpty()) {
+//            portfolios = portfolioRepository.findByPartIn(parts);
+//        }
+//        else if (groups != null && !groups.isEmpty()) {
+//            portfolios = portfolioRepository.findByUser_GroupIn(groups);
+//        } else {
+//            portfolios = portfolioRepository.findAll();  // 기본 fallback
+//        }
+//
+//        if (skills != null && !skills.isEmpty()) {
+//            portfolios = portfolios.stream()
+//                    .filter(p -> {
+//                        String pSkills = p.getSkills();
+//                        if(pSkills == null) return false;
+//
+//                        List<String> savedSkills = Arrays.stream(pSkills.split("[,\\s]+"))
+//                                .map(String::toLowerCase)
+//                                .toList();
+//
+//                        return skills.stream()
+//                                .map(String::toLowerCase)
+//                                .allMatch(savedSkills::contains);
+//                    })
+//                    .collect(Collectors.toList());
+//        }
+//
+//        return portfolios.stream()
+//                .map(ResponseBoardDto::fromEntity)
+//                .collect(Collectors.toList());
+//    }
+
+    // 카테고리 분류 - 페이지네이션 적용
     @Transactional
-    public List<ResponseBoardDto> searchByCategorys(List<String> parts, List<String> groups, List<String> skills) {
-        List<Portfolio> portfolios;
+    public CursorResponse searchByCategorysWithCursor(
+            List<String> parts, List<String> groups, List<String> skills,
+            Long likeCount, Long cursorId, int limit
+    ){
+        List<Portfolio> filtered;
 
-        if ((parts == null || parts.isEmpty()) &&
-                (groups == null || groups.isEmpty()) &&
-                (skills == null || skills.isEmpty())) {
-            portfolios = portfolioRepository.findAll();
+        // 값존재 X
+        if((parts == null || parts.isEmpty()) && (groups == null || groups.isEmpty())){
+            filtered = portfolioRepository.findAll();
         }
-        else if ((parts != null && !parts.isEmpty()) && (groups != null && !groups.isEmpty())) {
-            portfolios = portfolioRepository.findByPartInAndUser_GroupIn(parts, groups);
+        // part, group 존재할 시
+        else if(parts != null && !parts.isEmpty() && groups != null && !groups.isEmpty()){
+            filtered = portfolioRepository.findByPartInAndUser_GroupIn(parts, groups);
         }
-        else if (parts != null && !parts.isEmpty()) {
-            portfolios = portfolioRepository.findByPartIn(parts);
+        // parts만 존재할 시
+        else if(parts != null && !parts.isEmpty()){
+            filtered = portfolioRepository.findByPartIn(parts);
         }
-        else if (groups != null && !groups.isEmpty()) {
-            portfolios = portfolioRepository.findByUser_GroupIn(groups);
-        } else {
-            portfolios = portfolioRepository.findAll();  // 기본 fallback
+        // groups 존재할 시, 기타 등
+        else {
+            filtered = portfolioRepository.findByUser_GroupIn(groups);
         }
 
-        if (skills != null && !skills.isEmpty()) {
-            portfolios = portfolios.stream()
+        // skill 존재할 시
+        if(skills != null && !skills.isEmpty()){
+            filtered = filtered.stream()
                     .filter(p -> {
                         String pSkills = p.getSkills();
                         if(pSkills == null) return false;
-
                         List<String> savedSkills = Arrays.stream(pSkills.split("[,\\s]+"))
                                 .map(String::toLowerCase)
                                 .toList();
-
                         return skills.stream()
                                 .map(String::toLowerCase)
                                 .allMatch(savedSkills::contains);
@@ -504,10 +551,41 @@ public class BoardService {
                     .collect(Collectors.toList());
         }
 
-        return portfolios.stream()
+        // 커서 기반 페이징 네이션(좋아요)
+        List<Portfolio> sorted = filtered.stream()
+                .sorted(Comparator
+                        .comparing(Portfolio::getLikeCount, Comparator.reverseOrder())
+                        .thenComparing(Portfolio::getId, Comparator.reverseOrder()))
+                .toList();
+
+        List<Portfolio> paged;
+        if(likeCount == null || cursorId == null){
+            paged = sorted.stream().limit(limit).toList();
+        }
+        else {
+            paged = sorted.stream()
+                    .dropWhile(p -> {
+                        if(p.getLikeCount().equals(likeCount)){
+                            return p.getId() >= cursorId;
+                        }
+                        return p.getLikeCount() > likeCount;
+                    })
+                    .limit(limit)
+                    .toList();
+        }
+
+        if(paged.isEmpty()){
+            throw new PortfolioNotFoundException("포트폴리오가 더 이상 존재하지 않습니다.");
+        }
+
+        List<ResponseBoardDto> result = paged.stream()
                 .map(ResponseBoardDto::fromEntity)
                 .collect(Collectors.toList());
+
+        Portfolio last = paged.getLast();
+        return new CursorResponse(last.getLikeCount(), last.getId(), result);
     }
+
 
     // 포폴 삭제
     @Transactional

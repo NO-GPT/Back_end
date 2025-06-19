@@ -98,4 +98,32 @@ public class UserController {
                 .ok(ApiResponse
                         .success("회원 정보 수정 성공", user));
     }
+
+    @DeleteMapping("/delete/{id}")
+    @Operation(summary = "회원 탈퇴", description = "사용자 삭제")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "회원 탈퇴 성공",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "사용자를 찾을 수 없음",
+                    content = @Content)
+    })
+    public ResponseEntity<ApiResponse<String>> deleteUser(
+            @Parameter(description = "사용자 ID") @PathVariable Long id) {
+        if (!userRepository.existsById(id)) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse
+                            .error("사용자를 찾을 수 없습니다."));
+        }
+        userService.deleteUser(id);
+
+        return ResponseEntity
+                .ok(ApiResponse
+                        .success("회원 탈퇴 성공"));
+    }
 }

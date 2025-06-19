@@ -68,4 +68,10 @@ public class UserService {
 
         return ResponseUserDto.from(user);
     }
+
+    public void deleteUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다. ID: " + id));
+        userRepository.delete(user);
+    }
 }

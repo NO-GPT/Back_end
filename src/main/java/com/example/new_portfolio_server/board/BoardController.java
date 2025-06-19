@@ -7,6 +7,7 @@ import com.example.new_portfolio_server.board.dto.UpdateBoardDto;
 import com.example.new_portfolio_server.board.entity.Banner;
 import com.example.new_portfolio_server.board.entity.File;
 import com.example.new_portfolio_server.board.entity.Portfolio;
+import com.example.new_portfolio_server.board.file.ImageService;
 import com.example.new_portfolio_server.board.repsoitory.BannerRepository;
 import com.example.new_portfolio_server.board.repsoitory.FileRepository;
 import com.example.new_portfolio_server.board.repsoitory.PortfolioRepository;
@@ -119,6 +120,11 @@ public class BoardController {
         boardDto.setBanner(banner);
         boardDto.setFiles(files);
         return ApiResponse.success(boardService.createPortfolio(boardDto));
+    }
+
+    @GetMapping("/file/download")
+    public ResponseEntity<?> downloadFile(@RequestParam("fileId") Long fileId) throws IOException {
+        return imageService.getObject(fileId);
     }
 
     // 전체 게시물 조회

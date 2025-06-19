@@ -1,27 +1,39 @@
-package com.example.new_portfolio_server.board;
+package com.example.new_portfolio_server.board.file;
 
+import com.amazonaws.auth.policy.Resource;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.DeleteObjectRequest;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.*;
+import com.amazonaws.util.IOUtils;
+import com.example.new_portfolio_server.board.entity.File;
+import com.example.new_portfolio_server.board.repsoitory.FileRepository;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class ImageService {
+
+    private final FileRepository fileRepository;
 
     @Autowired
     private final AmazonS3 amazonS3;
@@ -67,21 +79,24 @@ public class ImageService {
         return fileName;
     }
 
-//    public byte[] downloadFile(String fileKey){
-//        try(S3Object s3Object = amazonS3.getObject(bucket, fileKey);
-//            InputStream inputStream = s3Object.getObjectContent()){
-//            return inputStream.readAllBytes();
-//        }
-//        catch (IOException e){
-//            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 다운로드 중 오류가 발생했습니다.");
-//        }
-//        catch (Exception e){
-//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "해당 파일을 찾을 수 없습니다. fileKey : " + fileKey);
-//        }
-//
-//    }
+    public ResponseEntity<byte[]> getObject(Long fileId) throws IOException{
+        File file = fileRepository.findById(fileId)
+                .orElseThrow(() -> new IllegalArgumentException("파일이 존재하지 않습니다."));
 
+        String fileKey = file.getFileUrl();
 
+        S3Object o = amazonS3.getObject(new GetObjectRequest(bucket, fileKey));
+        S3ObjectInputStream objectInputStream = o.getObjectContent();
+        byte[] bytes = IOUtils.toByteArray(objectInputStream);
+
+        String fileName = URLEncoder.encode(fileKey, "UTF-8").replaceAll("\\+", "%20");
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        httpHeaders.setContentLength(bytes.length);
+        httpHeaders.setContentDispositionFormData("attachment", fileName);
+
+        return new ResponseEntity<>(bytes, httpHeaders, HttpStatus.OK);
+    }
 
     // s3에 있는 파일 데이터 삭제
     public void deleteFile(String fileKey){

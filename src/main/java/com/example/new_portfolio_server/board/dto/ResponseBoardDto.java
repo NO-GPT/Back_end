@@ -7,6 +7,7 @@ import com.example.new_portfolio_server.bookmark.entity.BookMark;
 import com.example.new_portfolio_server.comments.entity.Comments;
 import com.example.new_portfolio_server.user.dto.ResponseUserDto;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,6 +17,7 @@ import java.util.List;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
 @Schema(description = "포트폴리오 응답 DTO")
 public class ResponseBoardDto {
@@ -54,6 +56,11 @@ public class ResponseBoardDto {
 
     private String username; // 유저 닉네임
 
+    private String userGroup; // 소속
+
+    @Schema(description = "좋아요 개수", example = "0")
+    private Long likeCount;
+
     @Schema(description = "해당 게시글에 달린 북마크 리스트")
     private List<BookMark> bookMarks; // 북마크 목록
 
@@ -76,8 +83,10 @@ public class ResponseBoardDto {
                 portfolio.getFiles(),                      // File 리스트
                 portfolio.getCreateDate(),
                 portfolio.getUpdateDate(),
-                portfolio.getUserId().getId(),
-                portfolio.getUserId().getUsername(),
+                portfolio.getUser().getId(),
+                portfolio.getUser().getUsername(),
+                portfolio.getUser().getGroup(),
+                portfolio.getLikeCount(),
                 portfolio.getBookMarks(),                 // BookMark 리스트
                 (long) portfolio.getBookMarks().size(),   // 북마크 수
                 portfolio.getComments()                   // 댓글 리스트

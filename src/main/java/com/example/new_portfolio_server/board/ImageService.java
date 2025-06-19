@@ -4,6 +4,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -65,6 +66,20 @@ public class ImageService {
 
         return fileName;
     }
+
+//    public byte[] downloadFile(String fileKey){
+//        try(S3Object s3Object = amazonS3.getObject(bucket, fileKey);
+//            InputStream inputStream = s3Object.getObjectContent()){
+//            return inputStream.readAllBytes();
+//        }
+//        catch (IOException e){
+//            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 다운로드 중 오류가 발생했습니다.");
+//        }
+//        catch (Exception e){
+//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "해당 파일을 찾을 수 없습니다. fileKey : " + fileKey);
+//        }
+//
+//    }
 
 
 

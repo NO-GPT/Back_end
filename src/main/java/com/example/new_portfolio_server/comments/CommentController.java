@@ -24,16 +24,16 @@ public class CommentController {
     private final CommentService commentService;
 
     // 댓글 게시
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<CommentResponseDto> createComment(@RequestBody @Valid CommentRequestDto commentRequestDto){
         return ResponseEntity.ok(commentService.createComment(commentRequestDto));
     }
 
-    // 댓글 전체 조회
-    @GetMapping
-    public ResponseEntity<List<CommentResponseDto>> getCommentAll() {
-        return ResponseEntity.ok(commentService.getCommentAll());
-    }
+//    // 댓글 전체 조회
+//    @GetMapping
+//    public ResponseEntity<List<CommentResponseDto>> getCommentAll() {
+//        return ResponseEntity.ok(commentService.getCommentAll());
+//    }
 
     @GetMapping("/list/{portfolioId}")
     public ResponseEntity<List<CommentResponseDto>> getComments(
@@ -61,7 +61,7 @@ public class CommentController {
     }
 
     // 댓글 수정
-    @PatchMapping("/{id}")
+    @PatchMapping("/update/{id}")
     public ResponseEntity<CommentResponseDto> updateComment(
             @PathVariable Long id,
             @RequestBody @Valid CommentEditRequestDto commentEditRequestDto
@@ -70,7 +70,7 @@ public class CommentController {
         return ResponseEntity.ok(commentResponseDto);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> deleteComment(@PathVariable Long id){
         commentService.deleteComment(id);
         return ResponseEntity.ok("댓글 삭제 성공");

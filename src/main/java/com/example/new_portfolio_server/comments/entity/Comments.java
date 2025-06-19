@@ -40,13 +40,13 @@ public class Comments {
     @LastModifiedDate
     private LocalDateTime editDate;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "portfolio_id")
     @JsonIgnore
     private Portfolio portfolio;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "username")
     @JsonIgnore
     private User user;
 }

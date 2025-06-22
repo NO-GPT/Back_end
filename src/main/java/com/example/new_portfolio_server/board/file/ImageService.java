@@ -1,6 +1,5 @@
 package com.example.new_portfolio_server.board.file;
 
-import com.amazonaws.auth.policy.Resource;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.*;
 import com.amazonaws.util.IOUtils;
@@ -12,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -125,5 +126,37 @@ public class ImageService {
         catch (StringIndexOutOfBoundsException e){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "잘못된 형식의 파일(" + fileName + ")입니다.");
         }
+    }
+
+    // 파일 조회
+    public ResponseEntity<Resource> getImageFile(String fileKey){
+        String extension = fileKey.substring(fileKey.lastIndexOf(".")).toLowerCase();
+
+        List<String> allowedImageExtension = List.of(".jpg", ".jpeg", ".gif", ".png", ".svg");
+        if(!allowedImageExtension.contains(extension)){
+            throw new ResponseStatusException(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "이미지 파일만 가능합니다.");
+        }
+
+        String fileUrl = amazonS3.getUrl(bucket, fileKey).toString();
+
+        Resource resource;
+        try {
+            resource = new UrlResource(fileUrl);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "S3 리소스를 불러올 수 없습니다.");
+        }
+
+        MediaType mediaType = switch (extension){
+            case ".jpg", ".jpeg" -> MediaType.IMAGE_JPEG;
+            case ".png" -> MediaType.IMAGE_PNG;
+            case ".gif" -> MediaType.IMAGE_GIF;
+            case ".svg" -> MediaType.valueOf("image/svg+xml");
+            default -> MediaType.APPLICATION_OCTET_STREAM;
+        };
+
+        return ResponseEntity.ok()
+                .contentType(mediaType)
+                .body(resource);
+
     }
 }

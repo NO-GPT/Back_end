@@ -23,6 +23,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -252,5 +253,11 @@ public class BoardController {
         bannerRepository.deleteById(bannerId);
 
         return ResponseEntity.ok(ApiResponse.success("배너 파일이 성공적으로 삭제되었습니다."));
+    }
+
+    // 파일 조회
+    @RequestMapping(value = "/file/view", method=RequestMethod.GET)
+    public ResponseEntity<Resource> viewImage(@RequestParam("fileKey") String fileKey){
+        return imageService.getImageFile(fileKey);
     }
 }

@@ -132,7 +132,7 @@ public class ImageService {
     public ResponseEntity<Resource> getImageFile(String fileKey){
         String extension = fileKey.substring(fileKey.lastIndexOf(".")).toLowerCase();
 
-        List<String> allowedImageExtension = List.of(".jpg", ".jpeg", ".gif", ".png", ".svg");
+        List<String> allowedImageExtension = List.of(".jpg", ".jpeg", ".gif", ".png", ".svg", ".pdf");
         if(!allowedImageExtension.contains(extension)){
             throw new ResponseStatusException(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "이미지 파일만 가능합니다.");
         }
@@ -151,6 +151,7 @@ public class ImageService {
             case ".png" -> MediaType.IMAGE_PNG;
             case ".gif" -> MediaType.IMAGE_GIF;
             case ".svg" -> MediaType.valueOf("image/svg+xml");
+            case ".pdf" -> MediaType.APPLICATION_PDF;
             default -> MediaType.APPLICATION_OCTET_STREAM;
         };
 

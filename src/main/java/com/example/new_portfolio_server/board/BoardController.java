@@ -23,6 +23,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -202,17 +203,18 @@ public class BoardController {
 
     // 카테고리별 조회
     @GetMapping("/search/category")
-    public ResponseEntity<ApiResponse<List<ResponseBoardDto>>> getPortfolioByCategory(
+    public ResponseEntity<ApiResponse<CursorResponse>> getPortfolioByCategoryWithCursor(
             @RequestParam(required = false) List<String> parts,
             @RequestParam(required = false) List<String> groups,
-            @RequestParam(required = false) List<String> skills){
-        List<ResponseBoardDto> portfolios = boardService.searchByCategorys(parts, groups, skills);
-
-        if(portfolios == null || portfolios.isEmpty()){
-            return ResponseEntity.ok(ApiResponse.fail("해당 카테고리에 해당하는 포트폴리오가 없습니다."));
-        }
-        return ResponseEntity.ok(ApiResponse.success(portfolios));
+            @RequestParam(required = false) List<String> skills,
+            @RequestParam(required = false) Long likeCount,
+            @RequestParam(required = false) Long cursorId,
+            @RequestParam(defaultValue = "10") int limit
+    ) {
+        CursorResponse response = boardService.searchByCategorysWithCursor(parts, groups, skills, likeCount, cursorId, limit);
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
+
 
     // id값으로 수정
     @Operation(summary = "포트폴리오 조회 수정", description = "수정합니다",
@@ -301,5 +303,11 @@ public class BoardController {
         bannerRepository.deleteById(bannerId);
 
         return ResponseEntity.ok(ApiResponse.success("배너 파일이 성공적으로 삭제되었습니다."));
+    }
+
+    // 파일 조회
+    @RequestMapping(value = "/file/view", method = RequestMethod.GET)
+    public ResponseEntity<byte[]> viewImage(@RequestParam("fileKey") String fileKey) {
+        return imageService.getImageFile(fileKey);
     }
 }

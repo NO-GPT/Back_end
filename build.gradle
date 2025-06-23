@@ -56,6 +56,8 @@ dependencies {
     implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
 
     implementation 'io.github.cdimascio:dotenv-java:3.2.0'
+
+    implementation 'org.apache.pdfbox:pdfbox:2.0.29'
 }
 dependencyManagement {
     imports {

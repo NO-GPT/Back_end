@@ -18,6 +18,7 @@ public class CommentResponseDto {
 
     private Long portfolio;
 
+    private Long userId;
     private String username;
 
     public static CommentResponseDto fromEntity(Comments comments){
@@ -27,6 +28,7 @@ public class CommentResponseDto {
                 comments.getCreateDate(),
                 comments.getEditDate(),
                 comments.getPortfolio().getId(),
+                comments.getUser().getId(),
                 comments.getUser().getUsername()
         );
     }

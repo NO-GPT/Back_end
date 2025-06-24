@@ -1,6 +1,5 @@
 package com.example.new_portfolio_server.board;
 
-import com.amazonaws.auth.policy.Resource;
 import com.example.new_portfolio_server.board.dto.BoardDto;
 import com.example.new_portfolio_server.board.dto.CursorResponse;
 import com.example.new_portfolio_server.board.dto.ResponseBoardDto;
@@ -14,9 +13,9 @@ import com.example.new_portfolio_server.board.repsoitory.BannerRepository;
 import com.example.new_portfolio_server.board.repsoitory.FileRepository;
 import com.example.new_portfolio_server.board.repsoitory.PortfolioRepository;
 import com.example.new_portfolio_server.common.exception.DuplicateResourceException;
+import com.example.new_portfolio_server.common.response.ApiResponse;
 import com.example.new_portfolio_server.user.UserRepository;
 import com.example.new_portfolio_server.user.entity.User;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -266,118 +265,129 @@ public class BoardService {
 
     // 포트폴리오 업로드
     @Transactional
-    public Portfolio createPortfolio(BoardDto boardDto) throws IOException {
-        // 유저 조회
-        User user = userRepository.findById(boardDto.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 유저 ID입니다."));
+    public ApiResponse<Portfolio> createPortfolio(BoardDto boardDto) throws IOException {
+        try {
+            // 유저 조회
+            User user = userRepository.findById(boardDto.getUserId())
+                    .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 유저 ID입니다."));
 
-        // 포트폴리오 생성 및 유저 설정
-        Portfolio portfolio = boardDto.toEntity();
-        portfolio.setUser(user);
+            // 포트폴리오 생성 및 유저 설정
+            Portfolio portfolio = boardDto.toEntity();
+            portfolio.setUser(user);
 
-        // 포트폴리오 저장
-        Portfolio saved = portfolioRepository.save(portfolio);
+            // 포트폴리오 저장
+            Portfolio saved = portfolioRepository.save(portfolio);
 
-        // 업로드할 배너 파일
-        MultipartFile banner = boardDto.getBanner();
-        if(banner != null && !banner.isEmpty()){
-            String bannerUrls = imageService.uploadFile(banner);
+            // 업로드할 배너 파일
+            MultipartFile banner = boardDto.getBanner();
+            if (banner != null && !banner.isEmpty()) {
+                String bannerUrls = imageService.uploadFile(banner);
 
-            Banner bannerEntity = Banner.builder()
-                    .bannerName(banner.getOriginalFilename())
-                    .contentType(banner.getContentType())
-                    .bannerUrl(bannerUrls)
-                    .size(banner.getSize())
-                    .createdDate(LocalDateTime.now())
-                    .portfolio(saved)
-                    .build();
-
-            bannerRepository.save(bannerEntity);
-        }
-
-        // 업로드할 파일
-        List<MultipartFile> files = boardDto.getFiles();
-
-        if(files != null && !files.isEmpty()){
-            List<String> fileUrls = imageService.uploadFile(files);
-
-            for(int i=0;i<files.size();i++){
-                MultipartFile multipartFile = files.get(i);
-                String fileUrl = fileUrls.get(i);
-
-                File file = File.builder()
-                        .fileName(multipartFile.getOriginalFilename())
-                        .contentType(multipartFile.getContentType())
-                        .size(multipartFile.getSize())
-                        .fileUrl(fileUrl)
+                Banner bannerEntity = Banner.builder()
+                        .bannerName(banner.getOriginalFilename())
+                        .contentType(banner.getContentType())
+                        .bannerUrl(bannerUrls)
+                        .size(banner.getSize())
                         .createdDate(LocalDateTime.now())
                         .portfolio(saved)
                         .build();
 
-                fileRepository.save(file);
+                bannerRepository.save(bannerEntity);
             }
+
+            // 업로드할 파일
+            List<MultipartFile> files = boardDto.getFiles();
+
+            if (files != null && !files.isEmpty()) {
+                List<String> fileUrls = imageService.uploadFile(files);
+
+                for (int i = 0; i < files.size(); i++) {
+                    MultipartFile multipartFile = files.get(i);
+                    String fileUrl = fileUrls.get(i);
+
+                    File file = File.builder()
+                            .fileName(multipartFile.getOriginalFilename())
+                            .contentType(multipartFile.getContentType())
+                            .size(multipartFile.getSize())
+                            .fileUrl(fileUrl)
+                            .createdDate(LocalDateTime.now())
+                            .portfolio(saved)
+                            .build();
+
+                    fileRepository.save(file);
+                }
+            }
+            return ApiResponse.success("포트폴리오 생성 성공", saved);
         }
-        return saved;
+        catch (Exception e){
+            return ApiResponse.error("오류 발생: " + e.getMessage());
+        }
     }
 
     //수정
     @Transactional
-    public Portfolio updatePortfolio(Long id, UpdateBoardDto boardDto, List<MultipartFile> newFiles, MultipartFile banner) {
-        Portfolio existing = portfolioRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("포트폴리오가 존재하지 않습니다."));
+    public ApiResponse<Portfolio> updatePortfolio(Long id, UpdateBoardDto boardDto, List<MultipartFile> newFiles, MultipartFile banner) {
+        try{
+            Portfolio existing = portfolioRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("포트폴리오가 존재하지 않습니다."));
 
-        boardDto.applyTo(existing);
+            boardDto.applyTo(existing);
 
-        if(banner != null && !banner.isEmpty()){
-            List<Banner> existingBanners = existing.getBanner_file();
+            if(banner != null && !banner.isEmpty()){
+                List<Banner> existingBanners = existing.getBanner_file();
 
-            for(Banner b : existingBanners){
-                String fileKey = b.getBannerUrl();
-                imageService.deleteFile(fileKey);
+                for(Banner b : existingBanners){
+                    String fileKey = b.getBannerUrl();
+                    imageService.deleteFile(fileKey);
+                }
+
+                existingBanners.clear();
+
+                String fileKey = imageService.uploadFile(banner);
+
+                Banner newBanner = Banner.builder()
+                        .bannerName(banner.getOriginalFilename())
+                        .contentType(banner.getContentType())
+                        .size(banner.getSize())
+                        .bannerUrl(fileKey)
+                        .createdDate(LocalDateTime.now())
+                        .portfolio(existing)
+                        .build();
+
+                existingBanners.add(newBanner);
             }
 
-            existingBanners.clear();
+            if(newFiles != null && !newFiles.isEmpty()){
+                List<MultipartFile> validFiles = newFiles.stream()
+                        .filter(file -> file != null && !file.isEmpty())
+                        .toList();
 
-            String fileKey = imageService.uploadFile(banner);
+                if(!validFiles.isEmpty()){
+                    List<String> fileurls = imageService.uploadFile(validFiles);
 
-            Banner newBanner = Banner.builder()
-                    .bannerName(banner.getOriginalFilename())
-                    .contentType(banner.getContentType())
-                    .size(banner.getSize())
-                    .bannerUrl(fileKey)
-                    .createdDate(LocalDateTime.now())
-                    .portfolio(existing)
-                    .build();
+                    for(int i=0; i<validFiles.size(); i++){
+                        MultipartFile file = validFiles.get(i);
+                        String url = fileurls.get(i);
 
-            existingBanners.add(newBanner);
-        }
+                        File fileEntity = File.builder()
+                                .fileName(file.getOriginalFilename())
+                                .fileUrl(url)
+                                .contentType(file.getContentType())
+                                .size(file.getSize())
+                                .createdDate(LocalDateTime.now())
+                                .portfolio(existing)
+                                .build();
 
-        if(newFiles != null && !newFiles.isEmpty()){
-            List<MultipartFile> validFiles = newFiles.stream()
-                    .filter(file -> file != null && !file.isEmpty())
-                    .toList();
-
-            if(!validFiles.isEmpty()){
-                List<String> fileurls = imageService.uploadFile(validFiles);
-
-                for(int i=0; i<validFiles.size(); i++){
-                    MultipartFile file = validFiles.get(i);
-                    String url = fileurls.get(i);
-
-                    File fileEntity = File.builder()
-                            .fileName(file.getOriginalFilename())
-                            .fileUrl(url)
-                            .contentType(file.getContentType())
-                            .size(file.getSize())
-                            .createdDate(LocalDateTime.now())
-                            .portfolio(existing)
-                            .build();
-
-                    fileRepository.save(fileEntity);
+                        fileRepository.save(fileEntity);
+                    }
                 }
             }
+            Portfolio saved = portfolioRepository.save(existing);
+            return ApiResponse.success("포트폴리오 수정 성공", saved);
         }
-        return portfolioRepository.save(existing);
+        catch (Exception e){
+            return ApiResponse.error("오류 발생 : " + e.getMessage());
+        }
     }
 
     // 좋아요 개수를 기준으로 정렬된 커서 기반 페이지 네이션 - 포트폴리오

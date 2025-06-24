@@ -23,7 +23,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -232,23 +231,17 @@ public class BoardController {
                             schema = @Schema(implementation = ApiResponse.class)))
     })
     @PatchMapping("update/{id}")
-    public ResponseEntity<ApiResponse<Portfolio>> updatePortfolio(
+    public ApiResponse<Portfolio> updatePortfolio(
             @PathVariable Long id,
             @RequestPart("data") @Valid UpdateBoardDto boardDto,
             @RequestPart(value = "files", required = false) List<MultipartFile> files,
             @RequestPart(value = "banner", required = false) MultipartFile banner) {
 
         if (!portfolioRepository.existsById(id)) {
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(ApiResponse
-                            .error("포트폴리오가 존재하지 않습니다."));
+            return ApiResponse.error("포트폴리오가 존재하지 않습니다.");
         }
 
-        Portfolio updated = boardService.updatePortfolio(id, boardDto, files, banner);
-        return ResponseEntity
-                .ok(ApiResponse
-                        .success(updated));
+        return boardService.updatePortfolio(id, boardDto, files, banner);
     }
 
     // id값으로 삭제

@@ -141,7 +141,7 @@ public class BoardController {
     public CursorResponse getPortfolioSortedByLike(
             @RequestParam(required = false) Long likeCount,
             @RequestParam(required = false) Long cursorId,
-            @RequestParam(defaultValue = "2") int limit
+            @RequestParam(defaultValue = "20") int limit
     ){
         return boardService.getAllPortfolioSortedByLike(likeCount, cursorId, limit);
     }

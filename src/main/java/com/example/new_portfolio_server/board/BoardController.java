@@ -307,7 +307,7 @@ public class BoardController {
 
     // 파일 조회
     @RequestMapping(value = "/file/view", method = RequestMethod.GET)
-    public ResponseEntity<byte[]> viewImage(@RequestParam("fileKey") String fileKey) {
+    public ResponseEntity<?> viewImage(@RequestParam("fileKey") String fileKey) {
         return imageService.getImageFile(fileKey);
     }
 }

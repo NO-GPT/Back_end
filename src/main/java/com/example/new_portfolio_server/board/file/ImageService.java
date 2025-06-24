@@ -4,6 +4,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.*;
 import com.amazonaws.util.IOUtils;
 import com.example.new_portfolio_server.board.entity.File;
+import com.example.new_portfolio_server.board.exception.ErrorDto;
 import com.example.new_portfolio_server.board.repsoitory.FileRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -125,7 +126,7 @@ public class ImageService {
     }
 
     // 파일 조회
-    public ResponseEntity<byte[]> getImageFile(String fileKey){
+    public ResponseEntity<?> getImageFile(String fileKey){
         String extension = fileKey.substring(fileKey.lastIndexOf(".")).toLowerCase();
 
         List<String> allowedImageExtension = List.of(".jpg", ".jpeg", ".gif", ".png", ".svg", ".pdf");
@@ -134,7 +135,9 @@ public class ImageService {
         }
 
         try{
+            // pdf 첫화면만 조회
             if(extension.equals(".pdf")){
+                // pdf -> png변환
                 S3Object s3Object = amazonS3.getObject(bucket, fileKey);
                 InputStream inputStream = amazonS3.getObject(bucket, fileKey).getObjectContent();
                 PDDocument document = PDDocument.load(inputStream);
@@ -172,7 +175,17 @@ public class ImageService {
                 return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
             }
         } catch(IOException e){
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 처리 중 오류 발생", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ErrorDto.builder()
+                            .message("파일 처리 중 오류가 발생")
+                            .detail(e.getMessage())
+                            .build());
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ErrorDto.builder()
+                            .message("오류 발생")
+                            .detail(e.getMessage())
+                            .build());
         }
     }
 }

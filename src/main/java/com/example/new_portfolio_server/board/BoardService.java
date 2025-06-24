@@ -266,7 +266,6 @@ public class BoardService {
     // 포트폴리오 업로드
     @Transactional
     public ApiResponse<Portfolio> createPortfolio(BoardDto boardDto) throws IOException {
-        try {
             // 유저 조회
             User user = userRepository.findById(boardDto.getUserId())
                     .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 유저 ID입니다."));
@@ -317,17 +316,12 @@ public class BoardService {
                     fileRepository.save(file);
                 }
             }
-            return ApiResponse.success("포트폴리오 생성 성공", saved);
-        }
-        catch (Exception e){
-            return ApiResponse.error("오류 발생: " + e.getMessage());
-        }
+        return ApiResponse.success("포트폴리오 생성 성공", saved);
     }
 
     //수정
     @Transactional
     public ApiResponse<Portfolio> updatePortfolio(Long id, UpdateBoardDto boardDto, List<MultipartFile> newFiles, MultipartFile banner) {
-        try{
             Portfolio existing = portfolioRepository.findById(id)
                     .orElseThrow(() -> new IllegalArgumentException("포트폴리오가 존재하지 않습니다."));
 
@@ -384,10 +378,6 @@ public class BoardService {
             }
             Portfolio saved = portfolioRepository.save(existing);
             return ApiResponse.success("포트폴리오 수정 성공", saved);
-        }
-        catch (Exception e){
-            return ApiResponse.error("오류 발생 : " + e.getMessage());
-        }
     }
 
     // 좋아요 개수를 기준으로 정렬된 커서 기반 페이지 네이션 - 포트폴리오

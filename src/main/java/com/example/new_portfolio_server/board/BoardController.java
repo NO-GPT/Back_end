@@ -23,7 +23,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -37,7 +36,7 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/portfolio")
-@Tag(name = "Portfolio API", description = "포트폴리오 관련 API")
+@Tag(name = "Portfolio API", description = "포트폴리오 관련 APIㅇ")
 public class BoardController {
     private final PortfolioRepository portfolioRepository;
     private final FileRepository fileRepository;
@@ -48,7 +47,21 @@ public class BoardController {
 
     private static final Logger logger = LoggerFactory.getLogger(BoardController.class);
 
-    // 검색
+    // 검색 ㅇㅇ
+    @Operation(summary = "포트폴리오 키워드로 검색", description = "키워드가 들어간 포폴들을 조회합니다.",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "포트폴리오 조회 성공",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "포트폴리오가 존재하지 않음",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiResponse.class)))
+    })
     @GetMapping("/search")
     public ResponseEntity<ApiResponse<List<Map<String, Object>>>> searchPortfoliosAndUsers(
             @RequestParam("keyword") String keyword,
@@ -86,8 +99,7 @@ public class BoardController {
     }
 
     // 게시
-    @Operation(summary = "포트폴리오 생성", description = "포폴을 생성합니다",
-            security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "포트폴리오 생성", description = "포폴을 생성합니다")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "200",
@@ -100,10 +112,10 @@ public class BoardController {
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = ApiResponse.class)))
     })
-    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<?> createPortfolio(
-            @RequestPart("boardDto") BoardDto boardDto,
-            @RequestPart("banner") MultipartFile banner,
+            @RequestPart(value = "boardDto", required = false) BoardDto boardDto,
+            @RequestPart(value ="banner", required = false) MultipartFile banner,
             @RequestPart(value = "files", required = false) List<MultipartFile> files) throws IOException {
         boardDto.setBanner(banner);
         boardDto.setFiles(files);
@@ -115,12 +127,21 @@ public class BoardController {
         return imageService.getObject(fileId);
     }
 
-    // 커서 기반 페이지네이션(포트폴리오) - 좋아요 기능
+    // 전체 게시물 조회
+    @Operation(summary = "포트폴리오 list", description = " 포폴list 조회합니다.",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "포트폴리오 조회 성공",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiResponse.class))),
+    })
     @GetMapping("/list")
     public CursorResponse getPortfolioSortedByLike(
             @RequestParam(required = false) Long likeCount,
             @RequestParam(required = false) Long cursorId,
-            @RequestParam(defaultValue = "2") int limit
+            @RequestParam(defaultValue = "20") int limit
     ){
         return boardService.getAllPortfolioSortedByLike(likeCount, cursorId, limit);
     }
@@ -147,7 +168,7 @@ public class BoardController {
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = ApiResponse.class)))
     })
-    @GetMapping("/{id}")
+    @GetMapping("/detail/{id}")
     public ResponseEntity<ApiResponse<ResponseBoardDto>> getPortfolioById(
             @Parameter(description = "포폴 아이디", example = "1") @PathVariable Long id) {
         if (!portfolioRepository.existsById(id)) {
@@ -195,28 +216,51 @@ public class BoardController {
 
 
     // id값으로 수정
-    @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<Portfolio>> updatePortfolio(
+    @Operation(summary = "포트폴리오 조회 수정", description = "수정합니다",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "포트폴리오 수정 성공",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "포트폴리오가 존재하지 않음",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiResponse.class)))
+    })
+    @PatchMapping("update/{id}")
+    public ResponseEntity<ResponseBoardDto> updatePortfolio(
             @PathVariable Long id,
             @RequestPart("data") @Valid UpdateBoardDto boardDto,
             @RequestPart(value = "files", required = false) List<MultipartFile> files,
             @RequestPart(value = "banner", required = false) MultipartFile banner) {
 
         if (!portfolioRepository.existsById(id)) {
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(ApiResponse
-                            .error("포트폴리오가 존재하지 않습니다."));
+            return ResponseEntity.notFound().build();
         }
 
         Portfolio updated = boardService.updatePortfolio(id, boardDto, files, banner);
-        return ResponseEntity
-                .ok(ApiResponse
-                        .success(updated));
+        return ResponseEntity.ok(ResponseBoardDto.fromEntity(updated));
     }
 
-    // portfolio 삭제
-    @DeleteMapping("/{boardId}")
+    // id값으로 삭제
+    @Operation(summary = "포트폴리오 삭제", description = "id값으로 삭제합니다.",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "포트폴리오 삭제 성공",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "포트폴리오가 존재하지 않음",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiResponse.class)))
+    })
+    @DeleteMapping("/delete/{boardId}")
     public ResponseEntity<ApiResponse<String>> deletePortfolio(@PathVariable Long boardId) {
         if (!portfolioRepository.existsById(boardId)) {
             return ResponseEntity
@@ -231,7 +275,7 @@ public class BoardController {
     }
 
     // 단일 file만 삭제
-    @DeleteMapping("/file")
+    @DeleteMapping("/delete/file")
     public ResponseEntity<ApiResponse<String>> deleteFile(@RequestParam Long fileId){
         File file = fileRepository.findById(fileId)
                 .orElseThrow(() -> new IllegalArgumentException("파일이 존재하지 않습니다."));
@@ -243,7 +287,7 @@ public class BoardController {
         return ResponseEntity.ok(ApiResponse.success("파일이 성공적으로 삭제되었습니다.", null));
     }
 
-    @DeleteMapping("/banner")
+    @DeleteMapping("/delete/banner")
     public ResponseEntity<ApiResponse<String>> deleteBanner(@RequestParam Long bannerId){
         Banner banner = bannerRepository.findById(bannerId)
                 .orElseThrow(() -> new IllegalArgumentException("배너 파일이 존재하지 않습니다."));
@@ -256,8 +300,8 @@ public class BoardController {
     }
 
     // 파일 조회
-    @RequestMapping(value = "/file/view", method = RequestMethod.GET)
-    public ResponseEntity<byte[]> viewImage(@RequestParam("fileKey") String fileKey) {
+    @GetMapping("/file/view")
+    public ResponseEntity<?> viewImage(@RequestParam("fileKey") String fileKey) {
         return imageService.getImageFile(fileKey);
     }
 }

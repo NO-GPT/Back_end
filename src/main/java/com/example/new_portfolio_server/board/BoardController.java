@@ -231,17 +231,18 @@ public class BoardController {
                             schema = @Schema(implementation = ApiResponse.class)))
     })
     @PatchMapping("update/{id}")
-    public ApiResponse<Portfolio> updatePortfolio(
+    public ResponseEntity<ResponseBoardDto> updatePortfolio(
             @PathVariable Long id,
             @RequestPart("data") @Valid UpdateBoardDto boardDto,
             @RequestPart(value = "files", required = false) List<MultipartFile> files,
             @RequestPart(value = "banner", required = false) MultipartFile banner) {
 
         if (!portfolioRepository.existsById(id)) {
-            return ApiResponse.error("포트폴리오가 존재하지 않습니다.");
+            return ResponseEntity.notFound().build();
         }
 
-        return boardService.updatePortfolio(id, boardDto, files, banner);
+        Portfolio updated = boardService.updatePortfolio(id, boardDto, files, banner);
+        return ResponseEntity.ok(ResponseBoardDto.fromEntity(updated));
     }
 
     // id값으로 삭제
@@ -299,7 +300,7 @@ public class BoardController {
     }
 
     // 파일 조회
-    @RequestMapping(value = "/file/view", method = RequestMethod.GET)
+    @GetMapping("/file/view")
     public ResponseEntity<?> viewImage(@RequestParam("fileKey") String fileKey) {
         return imageService.getImageFile(fileKey);
     }

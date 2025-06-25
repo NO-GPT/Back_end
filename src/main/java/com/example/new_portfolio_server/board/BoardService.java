@@ -56,8 +56,8 @@ public class BoardService {
     public static final String USERS_COLLECTION = "users";
 
     /*
-    * Typesense에 포트폴리오와 사용자 컬렉션을 생성하고, 데이터베이스의 모든 데이터를 인덱싱
-    * */
+     * Typesense에 포트폴리오와 사용자 컬렉션을 생성하고, 데이터베이스의 모든 데이터를 인덱싱
+     * */
     public void initializeCollections() {
         logger.info("Initializing Typesense collections");
         try {
@@ -126,8 +126,8 @@ public class BoardService {
     }
 
     /*
-    * 단일 포트폴리오를 Typesense의 portfolios 컬렉션에 인덱싱
-    * */
+     * 단일 포트폴리오를 Typesense의 portfolios 컬렉션에 인덱싱
+     * */
     public void indexPortfolio(Portfolio portfolio) throws Exception {
         if (portfolio == null) throw new IllegalArgumentException("Portfolio cannot be null");
 
@@ -170,7 +170,7 @@ public class BoardService {
     }
 
     /*
-    * 주어진 키워드로 포트폴리오와 사용자를 Typesense에서 검색하고, 페이지 단위로 정렬된 결과를 반환
+     * 주어진 키워드로 포트폴리오와 사용자를 Typesense에서 검색하고, 페이지 단위로 정렬된 결과를 반환
      */
     public List<Map<String, Object>> searchPortfoliosAndUsers(String keyword, int page, int size) throws Exception {
         List<Map<String, Object>> results = new ArrayList<>();
@@ -266,9 +266,9 @@ public class BoardService {
     // 포트폴리오 업로드
     @Transactional
     public ApiResponse<Portfolio> createPortfolio(BoardDto boardDto) throws IOException {
-            // 유저 조회
-            User user = userRepository.findById(boardDto.getUserId())
-                    .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 유저 ID입니다."));
+        // 유저 조회
+        User user = userRepository.findById(boardDto.getUserId())
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 유저 ID입니다."));
 
             // 포트폴리오 생성 및 유저 설정
             Portfolio portfolio = boardDto.toEntity();
@@ -277,10 +277,10 @@ public class BoardService {
             // 포트폴리오 저장
             Portfolio saved = portfolioRepository.save(portfolio);
 
-            // 업로드할 배너 파일
-            MultipartFile banner = boardDto.getBanner();
-            if (banner != null && !banner.isEmpty()) {
-                String bannerUrls = imageService.uploadFile(banner);
+        // 업로드할 배너 파일
+        MultipartFile banner = boardDto.getBanner();
+        if (banner != null && !banner.isEmpty()) {
+            String bannerUrls = imageService.uploadFile(banner);
 
                 Banner bannerEntity = Banner.builder()
                         .bannerName(banner.getOriginalFilename())
@@ -297,12 +297,12 @@ public class BoardService {
             // 업로드할 파일
             List<MultipartFile> files = boardDto.getFiles();
 
-            if (files != null && !files.isEmpty()) {
-                List<String> fileUrls = imageService.uploadFile(files);
+        if (files != null && !files.isEmpty()) {
+            List<String> fileUrls = imageService.uploadFile(files);
 
-                for (int i = 0; i < files.size(); i++) {
-                    MultipartFile multipartFile = files.get(i);
-                    String fileUrl = fileUrls.get(i);
+            for (int i = 0; i < files.size(); i++) {
+                MultipartFile multipartFile = files.get(i);
+                String fileUrl = fileUrls.get(i);
 
                     File file = File.builder()
                             .fileName(multipartFile.getOriginalFilename())
@@ -316,6 +316,7 @@ public class BoardService {
                     fileRepository.save(file);
                 }
             }
+        }
         return ApiResponse.success("포트폴리오 생성 성공", saved);
     }
 
@@ -327,41 +328,39 @@ public class BoardService {
 
             boardDto.applyTo(existing);
 
-            if(banner != null && !banner.isEmpty()){
-                List<Banner> existingBanners = existing.getBanner_file();
+        // 기존 배너 삭제 및 새 배너 저장
+        if (banner != null && !banner.isEmpty()) {
+            List<Banner> existingBanners = existing.getBanner_file();
+            for (Banner b : existingBanners) {
+                imageService.deleteFile(b.getBannerUrl());
+            }
+            existingBanners.clear();
 
-                for(Banner b : existingBanners){
-                    String fileKey = b.getBannerUrl();
-                    imageService.deleteFile(fileKey);
-                }
-
-                existingBanners.clear();
-
-                String fileKey = imageService.uploadFile(banner);
-
-                Banner newBanner = Banner.builder()
-                        .bannerName(banner.getOriginalFilename())
-                        .contentType(banner.getContentType())
-                        .size(banner.getSize())
-                        .bannerUrl(fileKey)
-                        .createdDate(LocalDateTime.now())
-                        .portfolio(existing)
-                        .build();
+            String fileKey = imageService.uploadFile(banner);
+            Banner newBanner = Banner.builder()
+                    .bannerName(banner.getOriginalFilename())
+                    .contentType(banner.getContentType())
+                    .size(banner.getSize())
+                    .bannerUrl(fileKey)
+                    .createdDate(LocalDateTime.now())
+                    .portfolio(existing)
+                    .build();
 
                 existingBanners.add(newBanner);
             }
 
-            if(newFiles != null && !newFiles.isEmpty()){
-                List<MultipartFile> validFiles = newFiles.stream()
-                        .filter(file -> file != null && !file.isEmpty())
-                        .toList();
+        // 새 파일 추가
+        if (newFiles != null && !newFiles.isEmpty()) {
+            List<MultipartFile> validFiles = newFiles.stream()
+                    .filter(file -> file != null && !file.isEmpty())
+                    .toList();
 
-                if(!validFiles.isEmpty()){
-                    List<String> fileurls = imageService.uploadFile(validFiles);
+            if (!validFiles.isEmpty()) {
+                List<String> fileUrls = imageService.uploadFile(validFiles);
 
-                    for(int i=0; i<validFiles.size(); i++){
-                        MultipartFile file = validFiles.get(i);
-                        String url = fileurls.get(i);
+                for (int i = 0; i < validFiles.size(); i++) {
+                    MultipartFile file = validFiles.get(i);
+                    String url = fileUrls.get(i);
 
                         File fileEntity = File.builder()
                                 .fileName(file.getOriginalFilename())
@@ -376,9 +375,11 @@ public class BoardService {
                     }
                 }
             }
-            Portfolio saved = portfolioRepository.save(existing);
-            return ApiResponse.success("포트폴리오 수정 성공", saved);
+        }
+
+        return portfolioRepository.save(existing);
     }
+
 
     // 좋아요 개수를 기준으로 정렬된 커서 기반 페이지 네이션 - 포트폴리오
     public CursorResponse getAllPortfolioSortedByLike(Long likeCount, Long cursorId, int limit) {
